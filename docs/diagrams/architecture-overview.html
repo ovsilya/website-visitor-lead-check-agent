@@ -237,6 +237,7 @@
     .quote{font-size:22px;}
   }
   @media (prefers-reduced-motion:no-preference){ .ms.now::after{animation:pulse 2.4s ease-in-out infinite;} @keyframes pulse{50%{box-shadow:0 0 0 11px var(--greenbg);}} }
+html.transparent-bg,html.transparent-bg body{background:transparent!important}
 </style>
 </head><body>
 <div class="page">
@@ -370,5 +371,5 @@
 
 </div>
 <script>const t=new URLSearchParams(location.search).get("theme");if(t)document.documentElement.setAttribute("data-theme",t);
-window.onload=()=>document.body.setAttribute("data-h",document.documentElement.scrollHeight)</script>
+window.onload=()=>document.body.setAttribute("data-h",document.documentElement.scrollHeight);if(location.search.includes("transparent"))document.documentElement.classList.add("transparent-bg");</script>
 </body></html>

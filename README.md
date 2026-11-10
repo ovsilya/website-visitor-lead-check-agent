@@ -16,7 +16,7 @@ Built as a **forward-deployed engineering** engagement embedded with an enterpri
 
 ## How it works
 
-<a href="https://ovsilya.github.io/website-visitor-lead-check-agent/diagrams/architecture-overview.html"><img alt="Architecture: a Marketing user signs in with Google (IAP) and chats with the ADK agent on Cloud Run; the agent runs the fixed-rules lead-check tool on the RB2B file, with editable lists and memory-only storage, and asks Gemini on Vertex AI for the summary" src="docs/diagrams/png/architecture-overview-light.png#gh-light-mode-only"><img alt="Architecture: a Marketing user signs in with Google (IAP) and chats with the ADK agent on Cloud Run; the agent runs the fixed-rules lead-check tool on the RB2B file, with editable lists and memory-only storage, and asks Gemini on Vertex AI for the summary" src="docs/diagrams/png/architecture-overview-dark.png#gh-dark-mode-only"></a>
+<a href="https://ovsilya.github.io/website-visitor-lead-check-agent/diagrams/architecture-overview.html"><img alt="Architecture: a Marketing user signs in with Google (IAP) and chats with the ADK agent on Cloud Run; the agent runs the fixed-rules lead-check tool on the RB2B file, with editable lists and memory-only storage, and asks Gemini on Vertex AI for the summary" src="docs/diagrams/png/architecture-overview.png"></a>
 
 ### The four checks (fixed rules, `lead_agent/lead_check/engine.py`)
 
