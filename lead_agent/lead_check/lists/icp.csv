@@ -1,0 +1,7 @@
+icp,kind,pattern,note
+Physical AI,page,physical-ai|robot|autonom|automotive|world-model|computer-vision|lidar|sensor|embodied|adas,"AI Data page paths about robotics, autonomy and vision (ICP-AI-DATA)"
+GenAI data,page,generative-ai|genai|llm|rlhf|fine-tun|model-eval|evaluation|red-team|agentic|multilingual|ai-safety|conversational,"AI Data page paths about language-model training and evaluation (ICP-AI-GENAI)"
+Physical AI,title,robot|autonom|perception|adas|computer vision|lidar|embodied|self-driving|world model,Buyer personas of ICP-AI-DATA
+GenAI data,title,llm|language model|foundation model|generative|genai|nlp|rlhf|alignment|ai safety|responsible ai|model eval|evaluation|conversational ai,Buyer personas of ICP-AI-GENAI
+Physical AI,segment,^(robotics|agi-robotics|automotive)$,"Account segment, used only when the pages and title don't say"
+GenAI data,segment,^(agi|agi-robotics)$,"Account segment, used only when the pages and title don't say"

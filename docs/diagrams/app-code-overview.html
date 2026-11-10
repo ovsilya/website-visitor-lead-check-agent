@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MDL App — Code Overview</title>
+<style>
+  :root{
+    --purple:#1F3A5F; --purple2:#2E5E8C; --purple3:#7FA7CF;
+    --green:#5FB709; --greenbg:#eaf6d8;
+    --teal:#128a7d; --tealbg:#dbf3ef;
+    --amber:#B06A00; --amberbg:#fbeede;
+    --red:#c0392b; --redbg:#fbe6e3;
+    --blue:#1f6fb2; --bluebg:#e4eff9;
+    --ink:#2A2432; --muted:#6b6675; --line:#e2ddec; --card:#fff; --bg:#f4f1f8;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);padding:20px;-webkit-font-smoothing:antialiased;}
+  .page{max-width:1240px;margin:0 auto;background:var(--card);border-radius:14px;box-shadow:0 8px 30px rgba(75,40,109,.12);padding:22px 26px 20px;}
+  .brand{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--purple2);font-weight:700;}
+  h1{font-size:21px;margin:3px 0 2px;color:var(--purple);}
+  .cap{font-size:12px;color:var(--muted);margin:3px 0 4px;line-height:1.5;}
+  code{background:#f2f0f6;border-radius:4px;padding:1px 5px;font-size:10px;color:var(--purple);}
+  h2{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--purple2);margin:22px 0 9px;}
+  .sub{font-size:10.5px;color:var(--muted);margin:-4px 0 8px;line-height:1.45;}
+
+  /* header + legend */
+  .hdr{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 6px;}
+  .hdr span{font-size:10px;background:#f6f3fa;border:1px solid var(--line);border-radius:20px;padding:2px 9px;color:var(--muted);}
+  .hdr b{color:var(--ink);}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:10px;color:var(--muted);border:1px solid var(--line);border-radius:10px;padding:7px 11px;background:#fcfbfd;}
+  .legend i{display:inline-block;vertical-align:-2px;margin-right:5px;}
+  .lg-line{width:22px;height:0;border-top:2px solid;}
+  .lg-box{width:14px;height:11px;border-radius:3px;border:1px solid;}
+
+  /* svg diagrams */
+  .scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:#fff;padding:8px;}
+  .scroll svg{display:block;width:100%;min-width:960px;height:auto;}
+  .sv text{font-family:inherit;}
+  .sv .t{font-size:11px;font-weight:700;fill:var(--ink);}
+  .sv .s{font-size:9.5px;fill:var(--muted);}
+  .sv .s2{font-size:9px;fill:#4f4a58;}
+  .sv .m{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9px;fill:var(--purple);}
+  .sv .w{fill:#fff;} .sv .w2{fill:#e2d4f4;font-size:9.5px;}
+  .sv .h{font-size:9px;font-weight:800;letter-spacing:.08em;fill:var(--purple2);}
+  .sv .lb{font-size:9px;fill:var(--muted);}
+  .sv .lbr{font-size:9px;fill:var(--red);}
+  .sv .fr{font-size:10.5px;font-weight:800;}
+  .bx{fill:#fff;stroke:var(--line);} .bxa{fill:var(--amberbg);stroke:#e0b877;} .bxp{fill:#efe7f7;stroke:#dcc9ee;}
+  .bxc{fill:var(--purple);stroke:none;} .bxr{fill:var(--redbg);stroke:#f0c9c3;} .bxt{fill:var(--tealbg);stroke:#bfe6df;}
+  .bxl{fill:#fbfafc;stroke:#c9c3d3;stroke-dasharray:4 3;} .bxg{fill:#f8f7fa;stroke:var(--line);}
+  .ln{stroke:var(--purple);stroke-width:1.6;fill:none;} .lp{stroke:var(--purple3);stroke-width:1.6;fill:none;}
+  .lgy{stroke:#9791a3;stroke-width:1.4;fill:none;stroke-dasharray:5 4;} .la{stroke:var(--amber);stroke-width:1.6;fill:none;}
+  .lr{stroke:var(--red);stroke-width:1.6;fill:none;} .life{stroke:#cfc8dc;stroke-width:1;stroke-dasharray:3 4;}
+
+  /* layered stack */
+  .stack{display:grid;grid-template-columns:150px 1fr;gap:8px 10px;}
+  .lname{border-radius:10px;padding:10px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;display:flex;flex-direction:column;justify-content:center;line-height:1.3;}
+  .lname span{font-weight:500;text-transform:none;letter-spacing:0;font-size:10px;color:var(--muted);margin-top:3px;}
+  .lrow{border-radius:10px;padding:8px;display:grid;gap:7px;}
+  .L-api .lname{background:var(--tealbg);color:var(--teal);} .L-api .lrow{background:#eef9f7;border:1px solid #bfe6df;}
+  .L-agent .lname{background:#efe7f7;color:var(--purple);} .L-agent .lrow{background:#f7f2fc;border:1px solid #dcc9ee;}
+  .L-biz .lname{background:var(--purple);color:#fff;} .L-biz .lname span{color:#e2d4f4;} .L-biz .lrow{background:#f3eefa;border:2px solid var(--purple3);}
+  .L-data .lname{background:#ecebf0;color:var(--muted);} .L-data .lrow{background:#f8f7fa;border:1px solid var(--line);}
+  .c4{grid-template-columns:repeat(4,1fr);} .c5{grid-template-columns:repeat(5,1fr);}
+  .box{background:#fff;border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:10px;line-height:1.4;}
+  .box .bt{font-size:8.5px;text-transform:uppercase;letter-spacing:.05em;font-weight:800;color:var(--muted);margin-bottom:1px;}
+  .box .bn{font-size:11.5px;font-weight:700;color:var(--ink);margin-bottom:2px;}
+  .box.core{background:linear-gradient(135deg,#1F3A5F,#2E5E8C);color:#fff;border:none;}
+  .box.core .bt{color:#d9c7f0;} .box.core .bn{color:#fff;} .box.core code{background:rgba(255,255,255,.16);color:#fff;}
+  .box.later{border-style:dashed;background:#fbfafc;color:var(--muted);}
+  .box.pd{border-color:#f0c9c3;background:#fffafa;}
+  .tag{display:inline-block;font-size:8.5px;font-weight:800;border-radius:20px;padding:1px 7px;margin-left:3px;vertical-align:1px;}
+  .t-pd{background:var(--redbg);color:var(--red);} .t-no{background:var(--greenbg);color:#3c6b00;} .t-chk{background:var(--amberbg);color:var(--amber);}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  .panel{border-radius:10px;padding:10px 12px;font-size:11px;line-height:1.5;border:1px solid var(--line);background:#fff;}
+  .panel h3{margin:0 0 6px;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--purple2);}
+  .panel ul{margin:0;padding-left:16px;} .panel li{margin:2px 0;}
+  .panel p{margin:0 0 5px;}
+  .info{background:#eef4fb;border-color:#cfe0f2;} .info h3{color:var(--blue);}
+  .live{background:var(--greenbg);border-color:#cfe7a8;} .live h3{color:#3c6b00;}
+  .mock{background:var(--amberbg);border-color:#eccfa6;} .mock h3{color:var(--amber);}
+  .priv{background:var(--redbg);border-color:#f0c9c3;} .priv h3{color:var(--red);}
+
+  pre.tree{margin:0;font:10.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;background:#faf9fc;border:1px solid var(--line);border-radius:10px;padding:10px 12px;overflow-x:auto;color:var(--ink);}
+  pre.tree .d{color:var(--purple);font-weight:700;} pre.tree .c{color:#8a8496;} pre.tree .k{color:var(--red);}
+
+  table{width:100%;border-collapse:collapse;font-size:10.5px;}
+  th{text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--line);padding:5px 6px;}
+  td{border-bottom:1px solid #f0edf5;padding:5px 6px;vertical-align:top;line-height:1.4;}
+  td:first-child{font-weight:700;color:var(--purple);}
+  table.cmp td:nth-child(2){background:#f6fbef;} table.cmp th:nth-child(2){color:#3c6b00;}
+
+  .prompt{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;}
+  .ps{border:1px solid #dcc9ee;background:#faf7fd;border-radius:8px;padding:7px 9px;font-size:10px;line-height:1.4;}
+  .ps b{display:block;font-size:10.5px;color:var(--purple);margin-bottom:2px;}
+  .phases{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-top:10px;}
+  .ph{border:1px solid var(--line);border-left:4px solid var(--purple);border-radius:8px;padding:7px 9px;font-size:10px;line-height:1.45;background:#fff;}
+  .ph b{display:block;font-size:10.5px;color:var(--purple);margin-bottom:2px;}
+  .ph.pr{border-left-color:var(--red);} .ph.pr b{color:var(--red);}
+  .ph.pa{border-left-color:var(--purple3);background:#faf7fd;}
+  .pipe{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;}
+  .pp{position:relative;border:1px solid var(--line);border-radius:10px;padding:9px 11px;font-size:10.5px;line-height:1.45;background:#fff;}
+  .pp b{display:block;font-size:11.5px;color:var(--ink);margin-bottom:3px;}
+  .pp .n{display:inline-flex;width:18px;height:18px;border-radius:50%;background:var(--purple);color:#fff;font-size:10px;font-weight:800;align-items:center;justify-content:center;margin-bottom:4px;}
+  .pp:not(:last-child)::after{content:"→";position:absolute;right:-18px;top:50%;transform:translateY(-50%);color:var(--purple3);font-size:16px;font-weight:800;}
+  .pp.ai{background:#efe7f7;border-color:#dcc9ee;}
+  .pp.rules{background:linear-gradient(135deg,#1F3A5F,#2E5E8C);border:none;color:#e9def7;} .pp.rules b{color:#fff;} .pp.rules .n{background:#fff;color:var(--purple);}
+  .contract{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-top:12px;align-items:start;}
+  .cando{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .note{font-size:10px;color:var(--muted);margin-top:7px;line-height:1.45;}
+  .outline{margin-top:12px;border:1px solid #dcc9ee;background:#faf7fd;border-radius:10px;padding:9px 11px;}
+  .oh{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--purple2);font-weight:800;margin-bottom:7px;}
+  .og{display:grid;grid-template-columns:repeat(6,1fr);gap:7px;}
+  .oi{background:#fff;border:1px solid #e8def3;border-radius:8px;padding:7px 9px;font-size:10px;line-height:1.4;}
+  .oi span{display:inline-flex;width:16px;height:16px;border-radius:50%;background:#efe7f7;color:var(--purple);font-size:9px;font-weight:800;align-items:center;justify-content:center;margin-bottom:3px;}
+  .oi b{display:block;font-size:10.5px;color:var(--purple);margin-bottom:2px;}
+  .src{margin-top:12px;font-size:9.5px;color:#9791a3;text-align:right;}
+  @media screen and (max-width:900px){.stack{grid-template-columns:1fr;} .c4,.c5,.two,.three,.prompt,.phases,.pipe,.contract,.cando,.og{grid-template-columns:1fr;} .pp:not(:last-child)::after{content:"↓";right:50%;top:auto;bottom:-20px;transform:none;}}
+  @media print{body{background:#fff;padding:0;} .page{box-shadow:none;border-radius:0;max-width:none;} @page{size:landscape;margin:8mm;} .panel,.box,tr,.scroll{break-inside:avoid;} h2{break-after:avoid;} pre.tree{font-size:8.6px;overflow:visible;} .scroll svg{min-width:0;}}
+</style>
+</head>
+<body><div style="font:12px/1.4 system-ui,sans-serif;background:#fff8e1;border:1px solid #f0d58a;color:#5c4400;padding:6px 10px;margin:0 0 10px;border-radius:6px">Anonymized portfolio version: people, company, project IDs and client accounts are replaced with roles or fictional names. The legacy weekly-report comparison tool shown here is not included in this repo.</div>
+<div class="page">
+  <div class="brand">the company · Internal FDE program · MDL lead check · technical</div>
+  <h1>Inside the spoke: the MDL app as one microservice</h1>
+  <div class="cap">The app is <b>one container on Cloud Run with one Python process</b>: a web server built by ADK (Google's Agent Development Kit) that serves the chat page, the parts of ADK's API the page needs, and the agent. <b>Two tools do all the scoring with fixed rules</b>; Gemini only picks the tool, reads the results and writes a short answer. Each tester is identified by their Google sign-in and sees only their own conversations. Nothing is stored: uploads, conversations and workbooks live in the process's memory and are deleted after 30 idle minutes, which is why it runs as a single instance.</div>
+  <div class="hdr">
+    <span>Status: <b>beta in the lab (revision 00003)</b></span>
+    <span>Date: <b>11-06</b></span>
+    <span>Owner: <b>FDE (FDE)</b></span>
+    <span>Environment: <b>lab</b> <code>lab-project</code></span>
+    <span>Code: <b><code>lead-check-agent/</code></b> (to move to the <code>mdl-lead-check</code> repo)</span>
+    <span>Stack: <b>Python 3.13 · <code>google-adk==2.11.0</code></b></span>
+  </div>
+  <div class="legend">
+    <span><i class="lg-line" style="border-color:var(--purple)"></i>request / call</span>
+    <span><i class="lg-line" style="border-color:var(--red)"></i>personal data (names, emails)</span>
+    <span><i class="lg-line" style="border-color:#9791a3;border-top-style:dashed"></i>logs, or not built yet</span>
+    <span><i class="lg-line" style="border-color:var(--amber)"></i>deploy</span>
+    <span><i class="lg-box" style="background:var(--redbg);border-color:#f0c9c3"></i>holds personal data, memory only</span>
+    <span><i class="lg-box" style="background:#fbfafc;border-color:#c9c3d3;border-style:dashed"></i>later</span>
+    <span><i class="lg-box" style="background:transparent;border-color:var(--red);border-style:dashed"></i>trust boundary</span>
+  </div>
+
+  <h2>1 · The app as a microservice: what calls it, what it calls, how it's deployed</h2>
+  <div class="sub">Context and container view. Everything inside the red dashed line is in the lab project; only testers on the IAP list get through the gate.</div>
+  <div class="scroll">
+  <svg class="sv" viewBox="0 0 1180 566" role="img" aria-label="The MDL app as a container on Cloud Run, with inputs on the left, the services it calls on the right and the deploy steps below">
+    <defs>
+      <marker id="mp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="#1F3A5F"/></marker>
+      <marker id="ml" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="#7FA7CF"/></marker>
+      <marker id="mr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="#c0392b"/></marker>
+      <marker id="mg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="#9791a3"/></marker>
+      <marker id="ma" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="#B06A00"/></marker>
+    </defs>
+
+    <!-- trust boundary: lab project -->
+    <rect x="188" y="6" width="988" height="460" rx="14" fill="none" stroke="#c0392b" stroke-width="1.2" stroke-dasharray="6 4"/>
+    <text x="200" y="21" class="lbr" font-weight="700">TRUST BOUNDARY · lab GCP project · us-central1 · no public access</text>
+
+    <!-- callers -->
+    <text x="10" y="94" class="h">WHO CALLS IT</text>
+    <rect x="10" y="102" width="150" height="64" rx="8" class="bx"/>
+    <text x="20" y="120" class="t">Marketing tester</text>
+    <text x="20" y="134" class="s">browser · chat page</text>
+    <text x="20" y="147" class="s">company.example via corporate SSO</text>
+
+    <rect x="10" y="250" width="150" height="56" rx="8" class="bxl"/>
+    <text x="20" y="268" class="t" fill="#6b6675">Later · GE</text>
+    <text x="20" y="282" class="s">Gemini Enterprise calls</text>
+    <text x="20" y="295" class="s">the agent over A2A</text>
+
+    <rect x="10" y="350" width="150" height="56" rx="8" class="bxl"/>
+    <text x="20" y="368" class="t" fill="#6b6675">Later · weekly job</text>
+    <text x="20" y="382" class="s">Cloud Scheduler →</text>
+    <text x="20" y="395" class="s">same rules → email</text>
+
+    <!-- IAP -->
+    <rect x="200" y="102" width="120" height="64" rx="8" class="bxa"/>
+    <text x="210" y="120" class="t">IAP gate</text>
+    <text x="210" y="134" class="s">Google sign-in</text>
+    <text x="210" y="147" class="s">adds signed token</text>
+    <text x="210" y="159" class="s">with your email</text>
+
+    <!-- Cloud Run service -->
+    <rect x="370" y="30" width="530" height="422" rx="14" fill="#eef4fb" stroke="#1f6fb2" stroke-width="1.5"/>
+    <text x="384" y="46" class="fr" fill="#1f6fb2">Cloud Run service · mdl-weekly-report</text>
+    <text x="384" y="59" class="s">max 1 instance · scales to 0 · 2 vCPU · 2 GiB · 900 s timeout · runs as mdl-agent-run</text>
+
+    <!-- container -->
+    <rect x="390" y="68" width="490" height="370" rx="10" fill="#fff" stroke="#7FA7CF" stroke-width="1.5"/>
+    <text x="404" y="85" class="fr" fill="#1F3A5F">Container · python:3.13-slim · python server.py · port 8080</text>
+    <text x="404" y="97" class="s">one Python process (the legacy script runs as a short second process when asked)</text>
+
+    <rect x="405" y="106" width="146" height="116" rx="8" class="bxt"/>
+    <text x="414" y="123" class="t">1 · Access check</text>
+    <text x="414" y="136" class="m">access.py</text>
+    <text x="414" y="151" class="s2">Reads your email from</text>
+    <text x="414" y="163" class="s2">Google's signed token and</text>
+    <text x="414" y="175" class="s2">uses it as your user ID.</text>
+    <text x="414" y="187" class="s2">Lets through only the page's</text>
+    <text x="414" y="199" class="s2">requests, for your own chats.</text>
+    <text x="414" y="211" class="s2">Adds browser security rules.</text>
+
+    <rect x="563" y="106" width="146" height="116" rx="8" class="bxt"/>
+    <text x="572" y="123" class="t">2 · Web server (ADK)</text>
+    <text x="572" y="136" class="m">server.py · FastAPI</text>
+    <text x="572" y="151" class="s2">Built by ADK. Serves the</text>
+    <text x="572" y="163" class="s2">chat page (/app) and the</text>
+    <text x="572" y="175" class="s2">chat API (/run).</text>
+    <text x="572" y="187" class="s2">Hands out each workbook</text>
+    <text x="572" y="199" class="s2">once (/download). Clears</text>
+    <text x="572" y="211" class="s2">idle chats every minute.</text>
+
+    <rect x="721" y="106" width="146" height="116" rx="8" class="bxp"/>
+    <text x="730" y="123" class="t">3 · Agent + plugin</text>
+    <text x="730" y="136" class="m">agent.py · uploads.py</text>
+    <text x="730" y="151" class="s2">The plugin takes the file</text>
+    <text x="730" y="163" class="s2">out of your message first,</text>
+    <text x="730" y="175" class="s2">so Gemini sees a placeholder.</text>
+    <text x="730" y="187" class="s2">Gemini reads the instruction,</text>
+    <text x="730" y="199" class="s2">picks the tool to run, then</text>
+    <text x="730" y="211" class="s2">writes a short summary.</text>
+
+    <line x1="551" y1="136" x2="561" y2="136" class="ln" marker-end="url(#mp)"/>
+    <line x1="709" y1="136" x2="719" y2="136" class="ln" marker-end="url(#mp)"/>
+
+    <rect x="405" y="238" width="146" height="92" rx="8" class="bxg"/>
+    <text x="414" y="255" class="t">Lists (config)</text>
+    <text x="414" y="268" class="m">lead_check/lists/</text>
+    <text x="414" y="283" class="s2">13 CSVs: accounts and tiers,</text>
+    <text x="414" y="295" class="s2">competitors, pages, points.</text>
+    <text x="414" y="307" class="s2">Marketing can edit them</text>
+    <text x="414" y="319" class="s2">without a code change.</text>
+
+    <rect x="563" y="238" width="304" height="92" rx="8" class="bxc"/>
+    <text x="574" y="255" class="t w">4 · Tools: fixed rules, no AI</text>
+    <text x="574" y="268" class="m" style="fill:#e2d4f4">tools.py · lead_check/ · baseline/</text>
+    <text x="574" y="283" class="w2">check_leads: reads the file, runs the 4 checks and points,</text>
+    <text x="574" y="295" class="w2">picks the top N per account, builds the Excel workbook</text>
+    <text x="574" y="307" class="w2">and returns a summary without names.</text>
+    <text x="574" y="319" class="w2">score_weekly_report: runs the legacy script unchanged.</text>
+
+    <line x1="794" y1="222" x2="794" y2="236" class="ln" marker-end="url(#mp)"/>
+    <line x1="551" y1="284" x2="561" y2="284" class="lp" marker-end="url(#ml)"/>
+
+    <rect x="405" y="346" width="462" height="80" rx="8" class="bxr"/>
+    <text x="416" y="364" class="t" fill="#c0392b">5 · Memory only · lost on restart</text>
+    <text x="416" y="379" class="s">uploaded files (_UPLOADS) · conversations and workbooks (ADK in-memory services)</text>
+    <text x="416" y="393" class="s">/dev/shm scratch, deleted after each run</text>
+    <text x="416" y="407" class="s">workbook deleted on first download · everything deleted after 30 idle minutes</text>
+    <text x="416" y="420" class="s">no disk, no bucket, no database</text>
+
+    <line x1="710" y1="331" x2="710" y2="345" class="lr" marker-start="url(#mr)" marker-end="url(#mr)"/>
+    <text x="716" y="342" class="lbr">read file · save workbook</text>
+
+    <!-- calls into the container, drawn over the frames -->
+    <line x1="160" y1="124" x2="198" y2="124" class="ln" marker-end="url(#mp)"/>
+    <line x1="320" y1="124" x2="403" y2="124" class="ln" marker-end="url(#mp)"/>
+    <line x1="403" y1="150" x2="322" y2="150" class="lr" marker-end="url(#mr)"/>
+    <line x1="198" y1="150" x2="162" y2="150" class="lr" marker-end="url(#mr)"/>
+    <text x="324" y="117" class="lb" paint-order="stroke" stroke="#fff" stroke-width="3">CSV, chat</text>
+    <text x="324" y="164" class="lbr" paint-order="stroke" stroke="#fff" stroke-width="3">card, .xlsx</text>
+    <line x1="160" y1="278" x2="388" y2="278" class="lgy" marker-end="url(#mg)"/>
+    <line x1="160" y1="378" x2="388" y2="378" class="lgy" marker-end="url(#mg)"/>
+
+    <!-- what it calls -->
+    <text x="920" y="94" class="h">WHAT IT CALLS</text>
+    <rect x="920" y="102" width="250" height="64" rx="8" class="bxp"/>
+    <text x="930" y="120" class="t">Gemini on Vertex AI</text>
+    <text x="930" y="134" class="m">gemini-3.5-flash · global endpoint</text>
+    <text x="930" y="147" class="s">gets placeholders and the summary,</text>
+    <text x="930" y="159" class="s">no names, links without ? or #</text>
+    <line x1="867" y1="126" x2="918" y2="126" class="ln" marker-end="url(#mp)"/>
+    <line x1="918" y1="148" x2="869" y2="148" class="lp" marker-end="url(#ml)"/>
+
+    <rect x="920" y="250" width="250" height="56" rx="8" class="bxg"/>
+    <text x="930" y="268" class="t">Cloud Logging</text>
+    <text x="930" y="282" class="s">request logs · errors as type only</text>
+    <text x="930" y="295" class="s">no prompt or file content</text>
+    <line x1="880" y1="278" x2="918" y2="278" class="lgy" marker-end="url(#mg)"/>
+
+    <rect x="920" y="350" width="250" height="56" rx="8" class="bxl"/>
+    <text x="930" y="368" class="t" fill="#6b6675">Later · Salesforce (read-only)</text>
+    <text x="930" y="382" class="s">is the lead already known?</text>
+    <line x1="880" y1="378" x2="918" y2="378" class="lgy" marker-end="url(#mg)"/>
+
+    <!-- deploy -->
+    <text x="10" y="484" class="h" style="fill:#B06A00">DEPLOY · lab: deploy.sh from a laptop · NP: Terraform + Cloud Build trigger · code only, never data</text>
+    <rect x="10" y="494" width="150" height="58" rx="8" class="bx"/>
+    <text x="20" y="512" class="t">Code</text>
+    <text x="20" y="526" class="m">lead-check-agent/</text>
+    <text x="20" y="539" class="s">later the app repo</text>
+
+    <rect x="200" y="494" width="150" height="58" rx="8" class="bxa"/>
+    <text x="210" y="512" class="t">deploy.sh</text>
+    <text x="210" y="526" class="m">gcloud run deploy</text>
+    <text x="210" y="539" class="s">--source . · turns IAP on</text>
+
+    <rect x="390" y="494" width="150" height="58" rx="8" class="bxa"/>
+    <text x="400" y="512" class="t">Cloud Build</text>
+    <text x="400" y="526" class="s">Dockerfile → image</text>
+    <text x="400" y="539" class="s">as mdl-agent-build</text>
+
+    <rect x="580" y="494" width="150" height="58" rx="8" class="bxa"/>
+    <text x="590" y="512" class="t">Artifact Registry</text>
+    <text x="590" y="526" class="s">the image:</text>
+    <text x="590" y="539" class="s">code + lists, no data</text>
+
+    <rect x="770" y="494" width="150" height="58" rx="8" class="bxa"/>
+    <text x="780" y="512" class="t">New revision</text>
+    <text x="780" y="526" class="s">replaces the old one</text>
+    <text x="780" y="539" class="s">(chats in memory end)</text>
+
+    <rect x="960" y="494" width="210" height="58" rx="8" class="bxg"/>
+    <text x="970" y="512" class="t">Settings (env vars)</text>
+    <text x="970" y="526" class="s">project · model · names off</text>
+    <text x="970" y="539" class="s">ALLOW_ORIGINS · IAP_AUDIENCE</text>
+
+    <line x1="160" y1="523" x2="198" y2="523" class="la" marker-end="url(#ma)"/>
+    <line x1="350" y1="523" x2="388" y2="523" class="la" marker-end="url(#ma)"/>
+    <line x1="540" y1="523" x2="578" y2="523" class="la" marker-end="url(#ma)"/>
+    <line x1="730" y1="523" x2="768" y2="523" class="la" marker-end="url(#ma)"/>
+    <line x1="960" y1="523" x2="922" y2="523" class="la" marker-end="url(#ma)"/>
+    <line x1="845" y1="494" x2="845" y2="454" class="la" marker-end="url(#ma)"/>
+  </svg>
+  </div>
+
+  <h2>2 · Components inside the container</h2>
+  <div class="stack">
+    <div class="L-api" style="display:contents">
+      <div class="lname">Interface / API<span><code>access.py</code> · <code>server.py</code> · <code>ui/</code></span></div>
+      <div class="lrow c5">
+        <div class="box pd"><div class="bt">Access check <span class="tag t-pd">identity</span></div><div class="bn"><code>AccessMiddleware</code></div>Verifies IAP's signed token; the email in it is the user ID. Only the page's endpoints, only for your own user; a <code>/run</code> for anyone else gets 403. Adds CSP and other security headers.</div>
+        <div class="box"><div class="bt">Web server</div><div class="bn">FastAPI + uvicorn</div><code>get_fast_api_app(web=False)</code> from ADK, port 8080. <code>/</code> redirects to the chat page; <code>/whoami</code> tells the page who you are.</div>
+        <div class="box"><div class="bt">Chat page</div><div class="bn"><code>ui/index.html</code> · <code>app.js</code></div>Plain HTML/JS. <code>marked</code> + <code>DOMPurify</code> kept in <code>ui/vendor/</code> and checked against npm checksums. No images or non-http links in Gemini's text.</div>
+        <div class="box"><div class="bt">Endpoints the page uses</div><div class="bn">REST</div><code>POST …/users/{you}/sessions</code> · <code>GET …/sessions/{id}</code> · <code>POST /run</code> · <code>GET /download/{session}/{file}</code></div>
+        <div class="box later"><div class="bt">Local only</div><div class="bn"><code>/dev-ui/</code></div>ADK's developer UI, with <code>ADK_DEV_UI=1</code>. The server refuses to start with it on Cloud Run.</div>
+      </div>
+    </div>
+    <div class="L-agent" style="display:contents">
+      <div class="lname">Agent (ADK)<span><code>agent.py</code> · <code>uploads.py</code> · <code>auth.py</code></span></div>
+      <div class="lrow c4">
+        <div class="box core"><div class="bt">App</div><div class="bn"><code>App("lead_agent")</code></div>One root agent plus one plugin. The ADK runner keeps the conversation and calls tools when the model asks.</div>
+        <div class="box"><div class="bt">Root agent</div><div class="bn"><code>mdl_lead_check</code></div><code>Agent(model=Gemini(…), instruction=INSTRUCTION, tools=[check_leads, score_weekly_report])</code>. Needs <code>GOOGLE_CLOUD_PROJECT</code>; no default.</div>
+        <div class="box pd"><div class="bt">Plugin <span class="tag t-pd">privacy</span></div><div class="bn"><code>InMemoryUploadsPlugin</code></div>Takes each attached file out of the message into memory and leaves a placeholder. Fails closed: anything that isn't plain text (e.g. a file sent by link) is removed.</div>
+        <div class="box"><div class="bt">Credentials</div><div class="bn"><code>project_credentials()</code></div>Local: a token from <code>lead-check-agent/.gcloud</code>. Cloud Run: <code>None</code>, so the service account is used.</div>
+      </div>
+    </div>
+    <div class="L-biz" style="display:contents">
+      <div class="lname">Business (rules)<span><code>tools.py</code> · <code>lead_check/</code> · <code>baseline/</code></span></div>
+      <div class="lrow c4">
+        <div class="box"><div class="bt">Tool (default)</div><div class="bn"><code>check_leads(top_n)</code></div>Reads the conversation's files → <code>run_lead_check</code> → <code>write_workbook</code> → saves the workbook → returns the summary JSON.</div>
+        <div class="box"><div class="bt">Engine</div><div class="bn"><code>lead_check/engine.py</code></div><code>read_exports</code> (dedupe by md5) → per person: <code>match_account</code>, <code>locate</code>, <code>page_kinds</code>, <code>titles.role</code> → <code>_check_person</code> (4 checks, points) → top N, account notes, whales, summary. Page links via <code>links.py</code>.</div>
+        <div class="box"><div class="bt">Role + workbook</div><div class="bn"><code>titles.py</code> · <code>workbook.py</code></div>the legacy <code>classify()</code> copied over, plus <code>role()</code> → leads / practitioner / unclear / weak. Excel with 5 sheets (openpyxl).</div>
+        <div class="box"><div class="bt">Tool (on request)</div><div class="bn"><code>score_weekly_report</code></div><code>baseline/runner.py</code> runs <code>legacy_report.py</code> unchanged as a subprocess, then summarises the workbook it writes.</div>
+      </div>
+    </div>
+    <div class="L-data" style="display:contents">
+      <div class="lname">Data<span>memory + config only</span></div>
+      <div class="lrow c4">
+        <div class="box pd"><div class="bt">Uploads <span class="tag t-pd">personal</span></div><div class="bn"><code>_UPLOADS</code> dict</div>Conversation ID → file bytes. <code>.csv</code>/<code>.xlsx</code>, 30 MB max.</div>
+        <div class="box pd"><div class="bt">Conversations + workbooks <span class="tag t-pd">workbook</span></div><div class="bn">ADK in-memory services</div>Registered as <code>mdl-memory://</code> with <code>use_local_storage=False</code>, so nothing goes to <code>.adk/</code>, locally or on Cloud Run.</div>
+        <div class="box"><div class="bt">Scratch</div><div class="bn"><code>/dev/shm</code> temp dir</div>RAM-backed folder for the workbook build and the legacy script. Deleted when the run ends.</div>
+        <div class="box"><div class="bt">Config <span class="tag t-no">no personal data</span></div><div class="bn"><code>lead_check/lists/</code> + env</div>13 CSVs loaded by <code>lists.py</code> into a <code>Lists</code> dataclass. Settings from environment variables.</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>3 · Sequence: one check, then the download</h2>
+  <div class="three">
+    <div class="panel info">
+      <h3>Why this view</h3>
+      <p>Section 1 shows <b>what</b> the parts are. This shows <b>in what order</b> they talk during one check, so you can see where each check happens and exactly which parts ever hold names.</p>
+      <p>It's the view to use for the DEP and for security questions like "can Gemini see the names?" or "can another tester get my workbook?"</p>
+    </div>
+    <div class="panel">
+      <h3>How to read it</h3>
+      <ul>
+        <li>Each column is one part of the app; time runs from top to bottom.</li>
+        <li>Each arrow is one message, numbered in order.</li>
+        <li><b style="color:var(--red)">Red arrows carry names</b> (the file or the workbook). None of them start or end at Gemini.</li>
+        <li>Light arrows are Gemini's answers.</li>
+      </ul>
+    </div>
+    <div class="panel live">
+      <h3>What it proves</h3>
+      <ul>
+        <li><b>Two gates:</b> IAP lets only listed testers in (2–3); the access check makes sure the chat is yours (4).</li>
+        <li><b>Gemini never sees the file:</b> the plugin sets it aside first (5); Gemini gets a placeholder (6) and a summary without names (11–12).</li>
+        <li><b>Rules decide:</b> the ranking is done by the tools (8–11); Gemini only explains it (13).</li>
+        <li><b>The workbook leaves once</b> and is deleted as it's handed over (15–17).</li>
+      </ul>
+    </div>
+  </div>
+  <div class="phases">
+    <div class="ph"><b>1–4 · Getting in</b>The page starts a chat and sends your message and file. IAP adds a signed token with your email; the access check accepts the request only if it's for your own chat.</div>
+    <div class="ph pr"><b>5 · File set aside</b>Before anything else, the plugin moves the file into memory and leaves a placeholder in the message.</div>
+    <div class="ph pa"><b>6–13 · Rules work, Gemini explains</b>Gemini picks <code>check_leads</code>. The tool reads the file, ranks the leads, saves the workbook and returns a summary without names. Gemini writes 2–4 sentences.</div>
+    <div class="ph"><b>14 · Answer on screen</b>The page draws the card from the tool's numbers, with Gemini's sentences under it.</div>
+    <div class="ph pr"><b>15–17 · Download once</b>The workbook is handed over and deleted in the same step. A second try gets "already downloaded".</div>
+  </div>
+  <div class="scroll" style="margin-top:10px">
+  <svg class="sv" viewBox="0 0 1180 600" role="img" aria-label="Sequence of one lead check from upload to workbook download">
+    <defs>
+      <marker id="sp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="#1F3A5F"/></marker>
+      <marker id="sl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="#7FA7CF"/></marker>
+      <marker id="sr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="#c0392b"/></marker>
+    </defs>
+    <g>
+      <rect x="15" y="8" width="130" height="34" rx="8" class="bx"/><text x="80" y="29" class="t" text-anchor="middle">Browser (chat page)</text>
+      <rect x="175" y="8" width="130" height="34" rx="8" class="bxa"/><text x="240" y="29" class="t" text-anchor="middle">IAP</text>
+      <rect x="335" y="8" width="130" height="34" rx="8" class="bxt"/><text x="400" y="29" class="t" text-anchor="middle">Access check</text>
+      <rect x="495" y="8" width="130" height="34" rx="8" class="bxp"/><text x="560" y="29" class="t" text-anchor="middle">ADK runner + plugin</text>
+      <rect x="655" y="8" width="130" height="34" rx="8" class="bxp"/><text x="720" y="29" class="t" text-anchor="middle">Gemini</text>
+      <rect x="815" y="8" width="130" height="34" rx="8" class="bxc"/><text x="880" y="29" class="t w" text-anchor="middle">Tools (rules)</text>
+      <rect x="995" y="8" width="130" height="34" rx="8" class="bxr"/><text x="1060" y="29" class="t" text-anchor="middle" fill="#c0392b">Memory</text>
+    </g>
+    <line x1="80" y1="42" x2="80" y2="560" class="life"/><line x1="240" y1="42" x2="240" y2="560" class="life"/>
+    <line x1="400" y1="42" x2="400" y2="560" class="life"/><line x1="560" y1="42" x2="560" y2="560" class="life"/>
+    <line x1="720" y1="42" x2="720" y2="560" class="life"/><line x1="880" y1="42" x2="880" y2="560" class="life"/>
+    <line x1="1060" y1="42" x2="1060" y2="560" class="life"/>
+
+    <text x="160" y="65" class="lb" text-anchor="middle"><tspan font-weight="800">1 </tspan>first Send: POST …/users/{you}/sessions</text>
+    <line x1="80" y1="70" x2="398" y2="70" class="ln" marker-end="url(#sp)"/>
+    <text x="160" y="93" class="lbr" text-anchor="middle"><tspan font-weight="800">2 </tspan>POST /run · text + CSV (base64)</text>
+    <line x1="80" y1="98" x2="238" y2="98" class="lr" marker-end="url(#sr)"/>
+    <text x="320" y="121" class="lb" text-anchor="middle"><tspan font-weight="800">3 </tspan>+ signed token with your email</text>
+    <line x1="240" y1="126" x2="398" y2="126" class="lr" marker-end="url(#sr)"/>
+    <text x="480" y="149" class="lb" text-anchor="middle"><tspan font-weight="800">4 </tspan>only if userId = your email (else 403)</text>
+    <line x1="400" y1="154" x2="558" y2="154" class="lr" marker-end="url(#sr)"/>
+    <text x="810" y="177" class="lbr" text-anchor="middle"><tspan font-weight="800">5 </tspan>plugin: file bytes → memory; the message keeps only a placeholder</text>
+    <line x1="560" y1="182" x2="1058" y2="182" class="lr" marker-end="url(#sr)"/>
+    <text x="640" y="205" class="lb" text-anchor="middle"><tspan font-weight="800">6 </tspan>instruction + text + placeholder</text>
+    <line x1="560" y1="210" x2="718" y2="210" class="ln" marker-end="url(#sp)"/>
+    <text x="640" y="233" class="lb" text-anchor="middle"><tspan font-weight="800">7 </tspan>call check_leads</text>
+    <line x1="720" y1="238" x2="562" y2="238" class="lp" marker-end="url(#sl)"/>
+    <text x="720" y="261" class="lb" text-anchor="middle"><tspan font-weight="800">8 </tspan>check_leads(top_n), in a worker thread</text>
+    <line x1="560" y1="266" x2="878" y2="266" class="ln" marker-end="url(#sp)"/>
+    <text x="970" y="289" class="lbr" text-anchor="middle"><tspan font-weight="800">9 </tspan>read the file</text>
+    <line x1="1060" y1="294" x2="882" y2="294" class="lr" marker-end="url(#sr)"/>
+    <text x="970" y="317" class="lbr" text-anchor="middle"><tspan font-weight="800">10 </tspan>save the workbook (names)</text>
+    <line x1="880" y1="322" x2="1058" y2="322" class="lr" marker-end="url(#sr)"/>
+    <text x="720" y="345" class="lb" text-anchor="middle"><tspan font-weight="800">11 </tspan>summary JSON: counts, titles, tiers, short links · no names</text>
+    <line x1="880" y1="350" x2="562" y2="350" class="ln" marker-end="url(#sp)"/>
+    <text x="640" y="373" class="lb" text-anchor="middle"><tspan font-weight="800">12 </tspan>summary JSON</text>
+    <line x1="560" y1="378" x2="718" y2="378" class="ln" marker-end="url(#sp)"/>
+    <text x="640" y="401" class="lb" text-anchor="middle"><tspan font-weight="800">13 </tspan>2–4 sentences (can't change the ranking)</text>
+    <line x1="720" y1="406" x2="562" y2="406" class="lp" marker-end="url(#sl)"/>
+    <text x="320" y="429" class="lb" text-anchor="middle"><tspan font-weight="800">14 </tspan>events: the card from the tool's JSON + Gemini's text</text>
+    <line x1="560" y1="434" x2="82" y2="434" class="ln" marker-end="url(#sp)"/>
+    <text x="240" y="461" class="lb" text-anchor="middle"><tspan font-weight="800">15 </tspan>Download: GET /download/{session}/{file}</text>
+    <line x1="80" y1="466" x2="398" y2="466" class="ln" marker-end="url(#sp)"/>
+    <text x="730" y="489" class="lbr" text-anchor="middle"><tspan font-weight="800">16 </tspan>load the workbook, then delete it</text>
+    <line x1="400" y1="494" x2="1058" y2="494" class="lr" marker-start="url(#sr)" marker-end="url(#sr)"/>
+    <text x="240" y="517" class="lbr" text-anchor="middle"><tspan font-weight="800">17 </tspan>.xlsx attachment · a second try gets 404</text>
+    <line x1="400" y1="522" x2="82" y2="522" class="lr" marker-end="url(#sr)"/>
+
+    <rect x="700" y="540" width="470" height="50" rx="8" class="bxg"/>
+    <text x="712" y="558" class="t">Every minute, the sweeper</text>
+    <text x="712" y="572" class="s">deletes conversations idle for 30 minutes, with their workbooks;</text>
+    <text x="712" y="584" class="s">the plugin drops their file bytes too. A restart or new revision clears everything.</text>
+    <rect x="15" y="540" width="660" height="50" rx="8" class="bxg"/>
+    <text x="27" y="558" class="t">On errors</text>
+    <text x="27" y="572" class="s">Tools return a plain message ({"status":"error"}); nothing else reaches Gemini or the page.</text>
+    <text x="27" y="584" class="s">On Cloud Run only the error type is logged. The page explains 401/403/404/413 in plain words.</text>
+  </svg>
+  </div>
+
+  <h2>4 · Deployment by environment</h2>
+  <table>
+    <tr><th>Environment</th><th>Project</th><th>How it's deployed</th><th>Who gets in</th><th>Status</th></tr>
+    <tr><td>Local</td><td>lab (via <code>lead-check-agent/.gcloud</code>)</td><td><code>./run.sh</code> on a laptop; user is <code>local</code>; dev UI only with <code>ADK_DEV_UI=1</code></td><td>The developer</td><td>Working</td></tr>
+    <tr><td>Lab (beta)</td><td><code>lab-project</code></td><td><code>deploy.sh</code>: Cloud Build from source, then IAP on; region us-central1</td><td>Testers on the IAP list (<code>grant-tester.sh</code>)</td><td>Thu 11-05 <span class="tag t-chk">check IAP audience</span></td></tr>
+    <tr><td>NP</td><td>Marketing NP</td><td>Terraform in <code>tf-infra-marketing</code> + Cloud Build trigger from the app repo; no manual changes</td><td>A Google group, bound on the service only</td><td>Planned; hosting choice open</td></tr>
+    <tr><td>Prod</td><td>Marketing prod</td><td>Same pipeline as NP, after DEP approval</td><td>Marketing's end-user list</td><td>Later</td></tr>
+  </table>
+
+  <h2>5 · Data and retention</h2>
+  <table>
+    <tr><th>Data</th><th>Personal?</th><th>Where it lives</th><th>How long</th><th>Who can see it</th></tr>
+    <tr><td>Uploaded RB2B file</td><td><span class="tag t-pd">yes</span></td><td>Process memory (<code>_UPLOADS</code>)</td><td>30 idle minutes, or until restart</td><td>Only the tools; never the model</td></tr>
+    <tr><td>Conversation</td><td>Titles, companies (no names)</td><td>ADK in-memory session</td><td>30 idle minutes, or until restart</td><td>The tester who started it</td></tr>
+    <tr><td>Workbook (.xlsx)</td><td><span class="tag t-pd">yes</span></td><td>ADK in-memory artifact</td><td>Until the first download, at most 30 idle minutes</td><td>The tester who ran the check</td></tr>
+    <tr><td>Scratch files</td><td><span class="tag t-pd">yes</span></td><td><code>/dev/shm</code> (RAM)</td><td>During one tool run</td><td>The process</td></tr>
+    <tr><td>Sent to Gemini</td><td>No names, no emails, links without <code>?</code>/<code>#</code></td><td>Vertex AI, per request</td><td>Per Vertex AI terms (to confirm in the DEP)</td><td>Google, as processor</td></tr>
+    <tr><td>Logs</td><td>Request lines (path, status, time); no file or prompt content</td><td>Cloud Logging</td><td>Project default</td><td>Project admins</td></tr>
+    <tr><td>Image</td><td><span class="tag t-no">no</span></td><td>Artifact Registry, Cloud Build source zip</td><td>Until deleted</td><td>Project admins</td></tr>
+  </table>
+
+  <h2>6 · Prompt and tool contract</h2>
+  <div class="sub">The instruction (prompt) tells Gemini when to call which tool and how to report back; the tools do all the scoring. This is the agreement between them.</div>
+  <div class="pipe">
+    <div class="pp"><span class="n">1</span><b>You upload a file</b>The plugin swaps it for <code>[Uploaded file: "…" · held in memory only]</code>. Gemini never gets the bytes.</div>
+    <div class="pp ai"><span class="n">2</span><b>Gemini picks a tool</b><code>check_leads</code> by default. <code>score_weekly_report</code> only if you ask for the legacy report or a comparison.</div>
+    <div class="pp rules"><span class="n">3</span><b>The tool runs the rules</b>Returns JSON: counts, tiers, titles, companies, short page links, why and next step. No names.</div>
+    <div class="pp ai"><span class="n">4</span><b>Gemini writes 2–4 sentences</b>Tier 1 first, then what to double-check. The card already shows every number.</div>
+  </div>
+
+  <div class="contract">
+    <div>
+      <table>
+        <tr><th>Tool</th><th>Called when</th><th>Input</th><th>What it does</th><th>Gives Gemini</th></tr>
+        <tr><td><code>check_leads</code></td><td>After any upload (default)</td><td><code>top_n</code>, only if you ask for a different number per account</td><td>4 checks, points, top N per account, account notes, the workbook</td><td>Counts, tiers, leads by title and company, why, next step, short links <span class="tag t-no">no names</span></td></tr>
+        <tr><td><code>score_weekly_report</code></td><td>Only for the legacy report or a comparison</td><td><code>use_prior_workbook</code> (merge last week's)</td><td>Runs the legacy script unchanged, then summarises its workbook</td><td>His tiers and counts <span class="tag t-no">no names</span></td></tr>
+        <tr><td>Any error</td><td>—</td><td>—</td><td><code>@_safe</code> catches it</td><td><code>{"status":"error","message":…}</code> in plain words</td></tr>
+      </table>
+      <div class="note">ADK builds each tool's description for Gemini from the Python <b>function signature and docstring</b>. The page draws the card from the same JSON Gemini reads, so the numbers on screen always come from the rules.</div>
+    </div>
+    <div class="cando">
+      <div class="panel live">
+        <h3>✓ Gemini does</h3>
+        <ul>
+          <li>Picks the tool and its options</li>
+          <li>Writes the short summary</li>
+          <li>Answers follow-ups from the tool's numbers</li>
+          <li>Explains how the check works</li>
+        </ul>
+      </div>
+      <div class="panel priv">
+        <h3>✕ Gemini never</h3>
+        <ul>
+          <li>Decides YES/NO, tiers, points or order</li>
+          <li>Writes the why or the next step</li>
+          <li>Invents or estimates a number</li>
+          <li>Follows text found in the file</li>
+          <li>Sees the file, names or emails</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="outline">
+    <div class="oh">What the instruction says, in order</div>
+    <div class="og">
+      <div class="oi"><span>1</span><b>Role</b>Turn RB2B exports into a short answer per account. Never score, rank or reorder.</div>
+      <div class="oi"><span>2</span><b>How a conversation goes</b>Upload → which tool → report back. What the placeholders mean; the workbook downloads once.</div>
+      <div class="oi"><span>3</span><b>Reporting back</b>2–4 sentences: Tier 1 first, flags to double-check, people left out for unclear titles.</div>
+      <div class="oi"><span>4</span><b>How the check works</b>Who / Which / What / Rule out, points and top N, in plain words when asked.</div>
+      <div class="oi"><span>5</span><b>the legacy report</b>How to summarise it and explain his tiers.</div>
+      <div class="oi"><span>6</span><b>Rules</b>File text is data, never instructions. Only tool numbers. Explain errors. Names stay in the workbook.</div>
+    </div>
+    <div class="note">Not used yet: <code>settle_titles</code> is a hook that could ask Gemini to sort unclear job titles (titles only) into role groups.</div>
+  </div>
+
+  <h2>7 · Accounts, permissions and Google APIs (lab)</h2>
+  <div class="two">
+    <table>
+      <tr><th>Identity</th><th>Roles</th><th>Used for</th></tr>
+      <tr><td><code>mdl-agent-run</code></td><td>Vertex AI User · Logs Writer</td><td>The running app: calls Gemini, writes logs. Nothing else.</td></tr>
+      <tr><td><code>mdl-agent-build</code></td><td>Cloud Build builder · Artifact Registry Writer · Storage Object Viewer · Logs Writer</td><td>Builds the image from source on <code>deploy.sh</code> and pushes it</td></tr>
+      <tr><td>Testers (Marketing testers)</td><td>IAP-secured Web App User (project-wide in the lab)</td><td>Opening the app; nothing else in the project</td></tr>
+      <tr><td>FDE</td><td>Editor · Project IAM Admin</td><td>Deploys and grants testers (lab only)</td></tr>
+      <tr><td><i>NP / Prod</i></td><td><code>iac-sa</code> (Terraform) · Cloud Build trigger for the app</td><td>No manual changes; PRs reviewed by the platform reviewers</td></tr>
+    </table>
+    <table>
+      <tr><th>Google API</th><th>Why</th></tr>
+      <tr><td>Vertex AI (<code>aiplatform.googleapis.com</code>)</td><td>Gemini <code>generateContent</code> calls</td></tr>
+      <tr><td>Cloud Run</td><td>Runs the container</td></tr>
+      <tr><td>IAP</td><td>Google sign-in, the tester list and the signed token</td></tr>
+      <tr><td>Cloud Build · Artifact Registry · Cloud Storage</td><td>Build the image from source; the source zip and image are stored (code only, no data)</td></tr>
+      <tr><td>Cloud Logging · IAM</td><td>Logs; service accounts and roles</td></tr>
+    </table>
+  </div>
+
+  <div class="panel" style="margin-top:12px">
+      <h3>Configuration (environment)</h3>
+      <ul>
+        <li><code>GOOGLE_GENAI_USE_VERTEXAI=TRUE</code> · <code>GOOGLE_CLOUD_PROJECT</code> (required) · <code>GOOGLE_CLOUD_LOCATION=global</code> · <code>MODEL=gemini-3.5-flash</code></li>
+        <li><code>SHARE_NAMES_WITH_MODEL=false</code> · <code>ALLOW_ORIGINS</code> (the service URL) · <code>IAP_AUDIENCE</code></li>
+        <li>Local only: <code>ADK_DEV_UI</code>, <code>PRIOR_WORKBOOK</code>, <code>LEAD_CHECK_LISTS</code>.</li>
+        <li>No secrets: Google auth comes from the service account.</li>
+      </ul>
+    </div>
+
+  <h2>8 · Hosting decision: Cloud Run or Agent Platform (open)</h2>
+  <div class="sub">The FDE tech lead recommended Agent Platform (Vertex AI Agent Engine, deployed with <code>adk deploy</code>) at the 11-03 standup. The beta stays on Cloud Run; the choice for NP is made before the NP Terraform, with the platform owners. Items marked <span class="tag t-chk">to check</span> are not confirmed yet.</div>
+  <table class="cmp">
+    <tr><th></th><th>Cloud Run + IAP (built, beta)</th><th>Agent Platform</th></tr>
+    <tr><td>What runs</td><td>Our container, exactly as tested locally: page, API and agent together</td><td>Google runs the ADK agent from our code; no container or web server of ours</td></tr>
+    <tr><td>Chat page and download</td><td>Served by the same app</td><td>Not included. Needs a front end somewhere (likely a Cloud Run service anyway), or testers use the console playground or Gemini Enterprise <span class="tag t-chk">to check</span></td></tr>
+    <tr><td>Sign-in and who's who</td><td>IAP with a tester list; the email in the signed token is the user ID</td><td>Google IAM on the API. A browser can't call it directly, so the front end calls it and passes the user</td></tr>
+    <tr><td>Uploads in memory only</td><td>Yes: plugin + in-memory store in one process, max 1 instance</td><td>The plugin runs there too, but conversations are kept by the managed session service and the agent may run as several copies, so a per-process upload store may not hold <span class="tag t-chk">to check</span></td></tr>
+    <tr><td>Gemini Enterprise</td><td>Needs an A2A endpoint through IAP (not built)</td><td>Closer path: agent registry and GE registration, the tech lead's main reason <span class="tag t-chk">to check for our tenant</span></td></tr>
+    <tr><td>Logs, traces, DEP</td><td>Our request logs only; prompt text off in traces</td><td>Managed traces and session storage, which the DEP must cover</td></tr>
+    <tr><td>NP deploy</td><td>Standard Cloud Run in Terraform + Cloud Build trigger</td><td>Terraform support and company patterns to agree with the platform owners <span class="tag t-chk">to check</span></td></tr>
+    <tr><td>Effort from here</td><td>Done; deploying Thursday</td><td>Rework of the page, sign-in and the memory-only design</td></tr>
+  </table>
+  <div class="two" style="margin-top:10px">
+    <div class="panel live">
+      <h3>Current lean</h3>
+      <p><b>Keep Cloud Run for the beta and, unless the checks change it, for NP.</b> The memory-only rule for uploads and the custom upload page are the deciding constraints, and Cloud Run meets both today.</p>
+      <p>To get the Gemini Enterprise benefit without moving, add an A2A endpoint to the same service later.</p>
+    </div>
+    <div class="panel info">
+      <h3>To decide it</h3>
+      <ul>
+        <li>Can Agent Platform keep uploads out of storage and out of the model, and keep sessions in memory or delete them on a timer?</li>
+        <li>Can it be pinned to one copy, or share the upload store safely?</li>
+        <li>How a Marketing user signs in, and how their identity reaches the agent.</li>
+        <li>Write a one-page decision record; agree it with the platform owners before.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>9 · Code map</h2>
+  <div class="two">
+<pre class="tree"><span class="d">lead-check-agent/</span>
+├── server.py            <span class="c"># ADK web server, /whoami, /download, sweeper (108 lines)</span>
+├── access.py            <span class="c"># IAP identity, allowlist, security headers (150)</span>
+├── Dockerfile           <span class="c"># python:3.13-slim, pip install, CMD python server.py</span>
+├── deploy.sh            <span class="c"># gcloud run deploy --source . , then turns IAP on</span>
+├── grant-tester.sh      <span class="c"># adds/removes IAP-secured Web App User</span>
+├── run.sh · gcloud.sh   <span class="c"># local run / gcloud with lead-check-agent/.gcloud only</span>
+├── <span class="d">ui/</span>
+│   ├── index.html       <span class="c"># chat page layout (129)</span>
+│   ├── app.js           <span class="c"># upload, cards, download (265)</span>
+│   └── <span class="d">vendor/</span>          <span class="c"># marked 12.0.2, DOMPurify 3.1.6, SHA256SUMS</span>
+├── <span class="d">lead_agent/</span>
+│   ├── agent.py         <span class="c"># INSTRUCTION, Gemini model, root agent, App (113)</span>
+│   ├── tools.py         <span class="c"># check_leads, score_weekly_report, @_safe (164)</span>
+│   ├── uploads.py       <span class="c"># InMemoryUploadsPlugin, _UPLOADS (83)</span>
+│   ├── links.py         <span class="c"># page links without query or fragment (11)</span>
+│   ├── auth.py          <span class="c"># local credentials from .gcloud (38)</span>
+│   ├── requirements.txt <span class="c"># google-adk==2.11.0, pandas, openpyxl</span>
+│   ├── <span class="k">.env</span>             <span class="c"># local settings, never committed</span>
+│   ├── <span class="d">lead_check/</span>       <span class="c"># the agreed check (beta)</span>
+│   │   ├── engine.py    <span class="c"># four checks, ranking, notes, summary (472)</span>
+│   │   ├── titles.py    <span class="c"># role from job title (144)</span>
+│   │   ├── lists.py     <span class="c"># loads lists/ into Lists (78)</span>
+│   │   ├── workbook.py  <span class="c"># the .xlsx (66)</span>
+│   │   ├── __main__.py  <span class="c"># CLI: python -m lead_agent.lead_check</span>
+│   │   └── <span class="d">lists/</span>       <span class="c"># 13 CSVs Marketing can edit</span>
+│   └── <span class="d">baseline/</span>         <span class="c"># the legacy report, unchanged</span>
+│       ├── legacy_report.py <span class="c"># verbatim copy (539)</span>
+│       └── runner.py    <span class="c"># runs it, summarises (222)</span>
+└── <span class="d">tests/</span>               <span class="c"># test_lead_check, test_web, test_ground_truth</span>
+<span class="c">never shipped: .gcloud/ .env .venv/ *.csv data</span></pre>
+    <div>
+      <table>
+        <tr><th>List file (<code>lists/</code>)</th><th>What it holds</th></tr>
+        <tr><td>accounts.csv</td><td>Domain → account, group, segment, tier (1 = whales + Marketing's 75 priority clients, 2 = AI Data target list)</td></tr>
+        <tr><td>account_aliases · company_names</td><td>Other domains and names that map to an account</td></tr>
+        <tr><td>own_companies · competitors · partners</td><td>Rule out (own staff, AI Data competitors from Marketing's matrix); flag partners</td></tr>
+        <tr><td>personal_email_domains</td><td>Gmail etc., and which company it would wrongly match</td></tr>
+        <tr><td>pages.csv</td><td>Regex per page kind: contact, service, article (an internal GenAI product pages don't count)</td></tr>
+        <tr><td>icp.csv</td><td>Words in page paths, titles or account segment → ICP label (Physical AI, GenAI data); a label only</td></tr>
+        <tr><td>countries · state_codes · cities</td><td>Country from city/state; which countries are focus</td></tr>
+        <tr><td>settings.csv</td><td>Points, top N (3), window (14 days), recent (7), new-logo revenue, max notes</td></tr>
+      </table>
+      <div class="panel info" style="margin-top:10px">
+        <h3>Libraries and tests</h3>
+        <ul>
+          <li><b>google-adk 2.11.0</b>: agent, runner, plugins, in-memory services, FastAPI server. It brings <code>google-genai</code>, <code>fastapi</code>, <code>uvicorn</code>, <code>google-auth</code>, <code>pydantic</code>, OpenTelemetry.</li>
+          <li><b>pandas</b>: reading RB2B exports, all rule logic. <b>openpyxl</b>: the workbook.</li>
+          <li><b>Tests (pytest, 16):</b> rules on a made-up export; no names in <code>check_leads</code>'s summary; the web layer (sign-in, allowlist, plugin, links, download once, sweeper); and a ground-truth test against the legacy report, run locally only.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="three" style="margin-top:14px">
+    <div class="panel live">
+      <h3>✓ Design choices</h3>
+      <ul>
+        <li><b>Rules decide, AI explains.</b> Scoring is plain, testable Python.</li>
+        <li><b>Lists are data, not code.</b> Marketing edits CSVs; tests guard the logic.</li>
+        <li><b>the legacy script runs verbatim</b> as a subprocess, so the comparison is exact.</li>
+        <li><b>The heavy steps run in worker threads</b> (the check, the workbook, the legacy script), so the page stays responsive.</li>
+      </ul>
+    </div>
+    <div class="panel priv">
+      <h3>Privacy built into the code</h3>
+      <ul>
+        <li>Each tester sees only their own conversations and workbooks.</li>
+        <li>The plugin strips files before the model or the conversation sees them, and removes anything that isn't text.</li>
+        <li>The summary has no names, emails or LinkedIn URLs, and page links lose <code>?</code>/<code>#</code>.</li>
+        <li>No disk, locally or on Cloud Run; workbook once; 30-minute cleanup; single instance on purpose.</li>
+      </ul>
+    </div>
+    <div class="panel mock">
+      <h3>◌ Not built yet</h3>
+      <ul>
+        <li><b>Weekly job</b> (Cloud Scheduler → same rules → email).</li>
+        <li><b>A2A endpoint</b> for Gemini Enterprise; Salesforce read-only check; AI title settling.</li>
+        <li>App repo with CI, lock file, non-root image by digest; per-run usage log line.</li>
+        <li>NP through Terraform; the hosting decision.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="src">Source: <code>lead-check-agent/</code> code and lab IAM as of 11-06 · views follow the standard set in KB 29 (context/container, components, sequence, deployment, data, decisions, code map) · see also mdl-target-architecture.html, mdl-terraform-cicd-deployment.html</div>
+</div>
+</body>
+</html>

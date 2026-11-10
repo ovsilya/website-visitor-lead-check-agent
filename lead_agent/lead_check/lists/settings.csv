@@ -1,0 +1,14 @@
+setting,value,meaning
+points_contact,3,Opened Contact Us
+points_service,2,Opened an AI Data Solutions service page
+points_leads_or_buys,2,"Role leads or buys AI/data (heads, directors, VPs, chiefs; procurement)"
+points_article,1,Read an AI article or insight
+points_practitioner,1,"Role does hands-on AI/data work (ML engineers, data scientists, researchers)"
+points_repeat,1,Came back on a different day
+points_recent,1,Latest visit within recent_days of the newest visit in the file
+top_n,3,Leads shown per account (3 to start; 5/10/20)
+window_days,14,Visits older than this (before the newest visit in the file) don't count as interest
+recent_days,7,Window for the 'seen recently' point
+new_logo_revenue,Above $50M|Over $5B,RB2B EstimateRevenue values that make a non-target company a new logo (Tier 2)
+max_account_notes_tier_2,15,Tier 2 account notes shown in the chat (all are in the workbook)
+new_logo_exclude_industries,Education,"RB2B Industry values that never make a new logo (universities, colleges); to confirm"

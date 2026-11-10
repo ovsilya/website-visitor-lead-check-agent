@@ -1,0 +1,11 @@
+domain,account,group,segment,account_tier,source
+globex.com,Globex,Globex,AGI-Robotics,1,whale (sample)
+initech.com,Initech,Initech,AGI,1,whale (sample)
+umbrella-corp.com,Umbrella,Umbrella,AGI,1,whale (sample)
+soylent.com,Soylent,Soylent,Fintech,1,priority existing account (sample)
+stark-industries.com,Stark Industries,Stark Industries,Robotics,1,priority existing account (sample)
+hooli.com,Hooli,Hooli,AGI,2,target list (sample)
+vandelay.com,Vandelay,Vandelay,Enterprise software,2,target list (sample)
+cyberdyne.com,Cyberdyne,Cyberdyne,AGI,2,target list (sample)
+wayfarer.com,Wayfarer,Wayfarer,Automotive,2,target list (sample)
+tyrell.com,Tyrell,Tyrell,Robotics,2,target list (sample)

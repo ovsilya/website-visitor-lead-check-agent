@@ -1,0 +1,22 @@
+# Sign-in, secrets, local state: never commit
+.gcloud/
+.env
+lead_agent/.env
+.adk/
+lead_agent/.adk/
+
+# Environments / caches
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.DS_Store
+
+# Data and outputs: real visitor exports and workbooks hold personal data
+outputs/
+data/
+*.csv
+*.xlsx
+# The editable rule lists ship with the app (sample values, no personal data)
+!lead_agent/lead_check/lists/*.csv

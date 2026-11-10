@@ -1,0 +1,77 @@
+country,focus,note
+United States,yes,
+Canada,yes,
+United Kingdom,yes,UKI
+Ireland,yes,"UKI; key, many tech clients have their HQ here"
+France,yes,Western Europe
+Germany,yes,Western Europe
+Netherlands,yes,Western Europe
+Belgium,yes,Western Europe
+Luxembourg,yes,Western Europe
+Switzerland,yes,Western Europe
+Austria,yes,Western Europe
+Spain,yes,Western Europe
+Portugal,yes,Western Europe
+Italy,yes,Western Europe
+Denmark,yes,Western Europe
+Sweden,yes,Western Europe
+Norway,yes,Western Europe
+Finland,yes,Western Europe
+Iceland,yes,Western Europe
+Singapore,yes,SE Asia
+Malaysia,yes,SE Asia
+Thailand,yes,SE Asia
+Vietnam,yes,SE Asia
+Indonesia,yes,SE Asia
+Philippines,yes,SE Asia
+Cambodia,yes,SE Asia
+Myanmar,yes,SE Asia
+Brunei,yes,SE Asia
+Japan,yes,
+South Korea,yes,
+China,yes,
+Hong Kong,yes,China
+Taiwan,yes,"China region, to confirm"
+India,no,ICP secondary region; not in Marketing's focus list
+Israel,no,ICP secondary region; not in Marketing's focus list
+Australia,no,ICP secondary region; not in Marketing's focus list
+New Zealand,no,
+Pakistan,no,
+Bangladesh,no,
+Nepal,no,
+Sri Lanka,no,
+Nigeria,no,
+Kenya,no,
+South Africa,no,
+Ghana,no,
+Ethiopia,no,
+Rwanda,no,
+Uganda,no,
+Zimbabwe,no,
+Botswana,no,
+Cameroon,no,
+Angola,no,
+Madagascar,no,
+Morocco,no,
+Egypt,no,
+Guatemala,no,delivery location
+El Salvador,no,delivery location
+Mexico,no,
+Brazil,no,
+Argentina,no,
+Chile,no,
+Colombia,no,
+Peru,no,
+Costa Rica,no,
+Dominican Republic,no,
+Turkey,no,
+Bulgaria,no,delivery location
+Romania,no,delivery location
+Serbia,no,
+Albania,no,
+Kosovo,no,
+Bosnia and Herzegovina,no,
+Greece,no,
+Poland,no,
+United Arab Emirates,no,
+Saudi Arabia,no,

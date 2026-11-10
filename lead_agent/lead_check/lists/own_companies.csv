@@ -1,0 +1,6 @@
+kind,value,note
+name,exampleco,the company itself
+domain,example.com,the company itself
+name,partnerly,a subsidiary (sample)
+domain,partnerly.com,a subsidiary (sample)
+domain,subsidiary-example.com,a subsidiary (sample)

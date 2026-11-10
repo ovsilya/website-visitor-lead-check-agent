@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MDL Lead Check — Target Architecture</title>
+<style>
+  :root{
+    --purple:#1F3A5F; --purple2:#2E5E8C; --purple3:#7FA7CF;
+    --green:#5FB709; --greenbg:#eaf6d8;
+    --teal:#128a7d; --tealbg:#dbf3ef;
+    --amber:#B06A00; --amberbg:#fbeede;
+    --red:#c0392b; --redbg:#fbe6e3;
+    --blue:#1f6fb2; --bluebg:#e4eff9;
+    --ink:#2A2432; --muted:#6b6675; --line:#e2ddec; --card:#fff; --bg:#f4f1f8;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);padding:20px;-webkit-font-smoothing:antialiased;}
+  .page{max-width:1240px;margin:0 auto;background:var(--card);border-radius:14px;box-shadow:0 8px 30px rgba(75,40,109,.12);padding:22px 26px 20px;}
+  .brand{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--purple2);font-weight:700;}
+  h1{font-size:21px;margin:3px 0 2px;color:var(--purple);}
+  .cap{font-size:12px;color:var(--muted);margin:3px 0 4px;line-height:1.5;}
+  .meta{font-size:10.5px;color:var(--muted);margin-bottom:12px;}
+  code{background:#f2f0f6;border-radius:4px;padding:1px 5px;font-size:10px;color:var(--purple);}
+  h2{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--purple2);margin:18px 0 9px;}
+
+  /* architecture grid */
+  .arch{display:grid;grid-template-columns:200px 1fr 1.45fr;gap:12px;align-items:stretch;}
+  .zone{border-radius:12px;padding:10px 11px 11px;position:relative;}
+  .zone > .zt{font-size:9.5px;text-transform:uppercase;letter-spacing:.07em;font-weight:800;margin-bottom:2px;}
+  .zone > .zs{font-size:10px;color:var(--muted);margin-bottom:8px;line-height:1.35;}
+  .z-people{background:var(--amberbg);border:1px dashed #e0b877;} .z-people > .zt{color:var(--amber);}
+  .z-hub{background:var(--tealbg);border:1px solid #bfe6df;} .z-hub > .zt{color:var(--teal);}
+  .z-spoke{background:#f3eefa;border:2px solid var(--purple3);} .z-spoke > .zt{color:var(--purple);}
+  .z-data{background:#f6f5f9;border:1px solid var(--line);} .z-data > .zt{color:var(--muted);}
+  .z-dev{background:var(--bluebg);border:1px solid #c4ddf1;} .z-dev > .zt{color:var(--blue);}
+
+  .box{background:#fff;border:1px solid var(--line);border-radius:9px;padding:7px 9px;margin-top:7px;font-size:10px;line-height:1.38;}
+  .box .bt{font-size:8.5px;text-transform:uppercase;letter-spacing:.05em;font-weight:800;color:var(--muted);margin-bottom:1px;}
+  .box .bn{font-size:11.5px;font-weight:700;color:var(--ink);margin-bottom:2px;}
+  .box.core{background:linear-gradient(135deg,#1F3A5F,#2E5E8C);color:#fff;border:none;box-shadow:0 3px 10px rgba(75,40,109,.28);}
+  .box.core .bt{color:#d9c7f0;} .box.core .bn{color:#fff;} .box.core code{background:rgba(255,255,255,.16);color:#fff;}
+  .box.ai{background:#efe7f7;border-color:#dcc9ee;}
+  .box.alt{border-style:dashed;}
+  .box.later{opacity:.92;border-style:dashed;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+  .row2 .box{margin-top:7px;}
+  .tag{display:inline-block;font-size:8.5px;font-weight:800;border-radius:20px;padding:1px 7px;margin-left:4px;vertical-align:1px;}
+  .t-def{background:var(--greenbg);color:#3c6b00;}
+  .t-alt{background:var(--amberbg);color:var(--amber);}
+  .t-now{background:var(--bluebg);color:var(--blue);}
+  .t-full{background:#efe7f7;color:var(--purple);}
+  .step{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;background:var(--purple);color:#fff;font-size:9px;font-weight:800;margin-right:4px;vertical-align:1px;}
+  .box.core .step{background:#fff;color:var(--purple);}
+  .bottom{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-size:10px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:3px 9px;}
+  .chip b{color:var(--purple);}
+
+  /* flow list */
+  .flow{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .panel{border-radius:10px;padding:10px 12px;font-size:11px;line-height:1.5;border:1px solid var(--line);background:#fff;}
+  .panel h3{margin:0 0 6px;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--purple2);}
+  .panel ol,.panel ul{margin:0;padding-left:17px;} .panel li{margin:2px 0;}
+  .live{background:var(--greenbg);border-color:#cfe7a8;} .live h3{color:#3c6b00;}
+  .mock{background:var(--amberbg);border-color:#eccfa6;} .mock h3{color:var(--amber);}
+  .info{background:#eef4fb;border-color:#cfe0f2;} .info h3{color:var(--blue);}
+  .priv{background:var(--redbg);border-color:#f0c9c3;} .priv h3{color:var(--red);}
+
+  /* phases */
+  .phases{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:6px;align-items:stretch;}
+  .ph{border-radius:10px;padding:10px 12px;font-size:10.5px;line-height:1.45;}
+  .ph .t{font-size:9px;text-transform:uppercase;letter-spacing:.05em;font-weight:800;margin-bottom:2px;}
+  .ph .n{font-size:11.5px;font-weight:700;margin-bottom:4px;}
+  .ph ul{margin:0;padding-left:15px;} .ph li{margin:1px 0;}
+  .p1{background:var(--amberbg);border:1px dashed #e0b877;} .p1 .t{color:var(--amber);}
+  .p2{background:var(--bluebg);border:1px solid #c4ddf1;} .p2 .t{color:var(--blue);}
+  .p3{background:var(--greenbg);border:1px solid #cfe7a8;} .p3 .t{color:#3c6b00;}
+  .arrow{display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--purple3);font-weight:700;flex:none;}
+
+  table{width:100%;border-collapse:collapse;font-size:10.5px;}
+  th{text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--line);padding:5px 6px;}
+  td{border-bottom:1px solid #f0edf5;padding:5px 6px;vertical-align:top;line-height:1.4;}
+  td:first-child{font-weight:700;color:var(--purple);}
+  td:last-child{color:var(--muted);white-space:nowrap;}
+  .src{margin-top:12px;font-size:9.5px;color:#9791a3;text-align:right;}
+  @media (max-width:900px){.arch,.bottom,.flow{grid-template-columns:1fr;} .phases{grid-template-columns:1fr;} .phases .arrow{transform:rotate(90deg);} .row2{grid-template-columns:1fr;}}
+  @media print{body{background:#fff;padding:0;} .page{box-shadow:none;border-radius:0;max-width:none;} @page{size:landscape;margin:8mm;}}
+</style>
+</head>
+<body><div style="font:12px/1.4 system-ui,sans-serif;background:#fff8e1;border:1px solid #f0d58a;color:#5c4400;padding:6px 10px;margin:0 0 10px;border-radius:6px">Anonymized portfolio version: people, company, project IDs and client accounts are replaced with roles or fictional names. The legacy weekly-report comparison tool shown here is not included in this repo.</div>
+<div class="page">
+  <div class="brand">the company · Internal FDE program · MDL lead check</div>
+  <h1>Target architecture: where the MDL lead check runs</h1>
+  <div class="cap">The final solution, following the program's decisions: <b>hub and spoke</b>. The agent runs in Marketing's own project (the spoke). It runs on <b>Cloud Run behind Google sign-in</b> (agreed with platform lead 10-30; compared with Agent Platform before NP), and users reach it through the central <b>Gemini Enterprise</b> app (the hub). Scoring is fixed rules; Gemini only explains. Everything is built from GitHub through Terraform, and the Marketing platform team owns it after handover.</div>
+  <div class="meta">Spoke: NP <code>marketing-np</code> → Prod <code>marketing-prod</code> · Today's MVP: lab <code>lab-project</code> · GCP org <code>company.example</code>, sign-in through corporate SSO</div>
+
+  <h2>The full picture</h2>
+  <div class="arch">
+    <!-- PEOPLE -->
+    <div class="zone z-people">
+      <div class="zt">People</div>
+      <div class="zs">company.example accounts, sign-in through corporate SSO</div>
+      <div class="box"><div class="bt">Weekly users</div><div class="bn">Marketing team</div>Marketing leads, SDR / client success (~10 users). Needs a <b>GE seat</b>.</div>
+      <div class="box"><div class="bt">Receives the weekly run</div><div class="bn">Lead-triage inbox</div>One email per week with the ranked leads; routes them to the right client-success owner.</div>
+      <div class="box alt"><div class="bt">Testing, and fallback</div><div class="bn">Direct link</div>Testers open the upload page behind Google sign-in (IAP). Today: four Marketing testers.</div>
+      <div class="box"><div class="bt">After handover</div><div class="bn">the Marketing platform team</div>Owns, runs and changes it. Reviews every PR, with a second reviewer.</div>
+    </div>
+
+    <!-- HUB -->
+    <div class="zone z-hub">
+      <div class="zt">Hub · central Gemini Enterprise project</div>
+      <div class="zs">Shared by all departments. Routes only; holds no Marketing data.</div>
+      <div class="box"><div class="bt"><span class="step">1</span>The front door</div><div class="bn">Gemini Enterprise app</div>The chat UI Marketing uses. Lists the MDL agent next to the other agents. <b>Long-term UI for the program</b> (program lead).</div>
+      <div class="box"><div class="bt">Agent registration</div><div class="bn">MDL agent imported into GE</div>Done by <b>the GE platform team</b>, in Terraform. GE only <i>points to</i> the agent; the agent still runs in the spoke. Each redeploy on Agent Engine means a new agent ID, so the import gets updated.</div>
+      <div class="box ai"><div class="bt">Model access</div><div class="bn">AI gateway</div>Built by the platform team. One endpoint; <b>gateway</b> picks the Gemini model, with a manual override. Spokes send their project ID, so costs land with Marketing.</div>
+      <div class="box"><div class="bt">Quality</div><div class="bn">Arize AX</div>Traces every run; evaluation sets (e.g. the ground-truth test vs the legacy report).</div>
+    </div>
+
+    <!-- SPOKE -->
+    <div class="zone z-spoke">
+      <div class="zt">Spoke · Marketing project (NP for testing → Prod)</div>
+      <div class="zs">Marketing's data, access and resources live here. Created only by Terraform from GitHub.</div>
+      <div class="box core">
+        <div class="bt"><span class="step">2</span>The agent (ADK)</div>
+        <div class="bn">MDL lead check: <code>lead_agent</code></div>
+        Reads the RB2B file → <b>fixed-rules lead check</b>: the 4 checks (Who · Which · What · Rule out), 2 account tiers, points, top N per account, account notes → workbook + summary. the legacy report stays available for comparison.
+      </div>
+      <div class="row2">
+        <div class="box"><div class="bt">Runs on <span class="tag t-def">agreed for MDL</span></div><div class="bn">Cloud Run + IAP, A2A for GE</div>One container serves the <b>upload page</b> behind Google sign-in and an A2A endpoint that GE imports. Agreed with platform lead 10-30. Max 1 instance; in memory only; each user sees only their own chats.</div>
+        <div class="box alt"><div class="bt">Being compared <span class="tag t-alt">program default</span></div><div class="bn">Agent Platform (Vertex AI Agent Engine)</div>The program's default runtime; The FDE tech lead recommended it for MDL on 11-03. No upload page of its own, and it's not yet confirmed it can keep uploads in memory only. Decision before NP. Same ADK code, so either way works.</div>
+      </div>
+      <div class="row2">
+        <div class="box ai"><div class="bt"><span class="step">3</span>Explanation only</div><div class="bn">Gemini on Vertex AI</div>Writes the short summary and answers questions; the rules write each lead's why and next step. Gets counts, titles, accounts and tiers, <b>never names</b>. <code>global</code> endpoint today; via the AI gateway once it's ready.</div>
+        <div class="box later"><div class="bt">Weekly run <span class="tag t-full">full version</span></div><div class="bn">Cloud Scheduler → job</div>Runs the same scoring every week and emails the lead-triage inbox. Doesn't need GE.</div>
+      </div>
+      <div class="row2">
+        <div class="box"><div class="bt">Editable lists</div><div class="bn">Config</div>CSV lists in the app repo: accounts and tiers, own companies, competitors, pages, regions, point weights. Changed by Marketing without code changes.</div>
+        <div class="box"><div class="bt">Plumbing (Terraform)</div><div class="bn">Platform pieces</div>App service account (Vertex AI User + Logs Writer) · Artifact Registry (requested) · Logging · IAP + testers. In <code>tf-infra-marketing</code>, next to another team's lead-triage agent.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom">
+    <div class="zone z-data">
+      <div class="zt">Data sources (Marketing's systems)</div>
+      <div class="zs">Each new source needs access approval; Prod needs the approved MDL DEP (data governance).</div>
+      <div class="chips">
+        <span class="chip"><b>RB2B</b> weekly CSV: uploaded today; an automatic feed for the weekly run is TBD</span>
+        <span class="chip"><b>Salesforce</b>: read-only "already a contact?" check <span class="tag t-full">full</span></span>
+        <span class="chip"><b>Pardot</b>: MALs, later phase</span>
+        <span class="chip"><b>BigQuery</b>: Marketing's reporting (platform lead), possible home for lists/results</span>
+      </div>
+    </div>
+    <div class="zone z-dev">
+      <div class="zt">How it gets built and changed</div>
+      <div class="zs">No manual changes in the Marketing projects (platform lead, 10-27).</div>
+      <div class="chips">
+        <span class="chip"><b>GitHub, company org</b>: app repo + <code>tf-infra-marketing</code></span>
+        <span class="chip"><b>PR review</b>: the platform reviewers</span>
+        <span class="chip"><b>Cloud Build</b>: tag-triggered <code>terraform plan</code> / <code>apply</code> as <code>iac-sa</code></span>
+        <span class="chip"><b>App releases</b>: Cloud Build or Cloud Deploy (<code>cicd-sa</code>), to agree</span>
+        <span class="chip">Detail: <code>mdl-terraform-cicd-deployment.html</code></span>
+      </div>
+    </div>
+  </div>
+
+  <h2>What happens on a run</h2>
+  <div class="flow">
+    <div class="panel info">
+      <h3>A · On demand, in chat (target)</h3>
+      <ol>
+        <li>A Marketing user opens <b>Gemini Enterprise</b>, picks the MDL agent and attaches this week's RB2B export.</li>
+        <li>GE passes the request to the agent <b>in the Marketing spoke</b> (Cloud Run, via A2A).</li>
+        <li>The agent scores the file with fixed rules. The file stays in memory and is never saved.</li>
+        <li>It sends counts, titles and accounts, no names, to <b>Gemini</b> (via the AI gateway) for the short summary.</li>
+        <li>The user gets the summary in chat and the workbook to download. Arize records the trace.</li>
+      </ol>
+    </div>
+    <div class="panel info">
+      <h3>B · Weekly, automatic (full version)</h3>
+      <ol>
+        <li><b>Cloud Scheduler</b> starts the weekly job in the spoke.</li>
+        <li>It reads the week's RB2B data (source TBD: upload, export or feed) and checks <b>Salesforce</b> for existing contacts.</li>
+        <li>Same scoring and same Gemini step as in chat.</li>
+        <li>One email goes to the <b>lead-triage inbox</b>, which routes leads to client-success owners.</li>
+      </ol>
+      <p style="margin:6px 0 0;font-size:10.5px;color:var(--muted)">Flow B doesn't touch Gemini Enterprise, so it works even if GE file upload doesn't.</p>
+    </div>
+  </div>
+
+  <h2>From today to the final solution</h2>
+  <div class="phases">
+    <div class="ph p1">
+      <div class="t">Now → beta (Nov 6)</div>
+      <div class="n">Lab project, Cloud Run + IAP</div>
+      <ul>
+        <li>Upload page, direct Gemini call</li>
+        <li>Manual deploys allowed; beta deployed Nov 5</li>
+        <li>Testers: four Marketing testers</li>
+        <li>Each tester sees only their own chats; workbook downloads once</li>
+      </ul>
+    </div>
+    <div class="arrow">→</div>
+    <div class="ph p2">
+      <div class="t">In parallel → pilot (Nov 20)</div>
+      <div class="n">Marketing NP, built by Terraform</div>
+      <ul>
+        <li>Same container on Cloud Run + IAP</li>
+        <li>Bootstrap merged; APIs and Artifact Registry requested</li>
+        <li>Sample data first; real files once the DEP allows</li>
+        <li>Testers move here when it works</li>
+        <li>Test: GE upload → agent → workbook</li>
+      </ul>
+    </div>
+    <div class="arrow">→</div>
+    <div class="ph p3">
+      <div class="t">Full version (Dec 11)</div>
+      <div class="n">Marketing Prod + Gemini Enterprise</div>
+      <ul>
+        <li>Agent imported into GE (the GE platform team)</li>
+        <li>Cloud Run + A2A</li>
+        <li>Weekly email, Salesforce check</li>
+        <li>AI gateway, Arize, approved DEP</li>
+        <li>Handover to the Marketing platform team</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="flow" style="margin-top:12px">
+    <div class="panel live">
+      <h3>✓ Decisions this is built on</h3>
+      <table>
+        <tr><th>Decision</th><th>Source</th></tr>
+        <tr><td>Hub and spoke; one spoke per department</td><td>Tech lead, 09-28 / 10-13 / 10-15</td></tr>
+        <tr><td>Marketing's own NP + Prod projects are the spoke</td><td>Marketing lead 10-21, platform lead 10-27</td></tr>
+        <tr><td>Agent Engine is the program default; Cloud Run allowed</td><td>Agentic Modularity 10-15</td></tr>
+        <tr><td><b>MDL runs on Cloud Run + IAP in NP and Prod</b> (re-checked against Agent Platform)</td><td>platform lead 10-30</td></tr>
+        <tr><td>Central AI gateway (routing, override)</td><td>Agentic Modularity 10-15</td></tr>
+        <tr><td>Arize AX for tracing and evaluation</td><td>Chat 10-06/07, 10-15</td></tr>
+        <tr><td>Terraform via GitHub only; PRs reviewed by the platform reviewers</td><td>10-15, platform lead 10-27</td></tr>
+        <tr><td>GE import by the GE platform team, in Terraform</td><td>Standup 10-26</td></tr>
+        <tr><td>GE is the long-term UI; custom page is a testing exception</td><td>10-05, 10-15</td></tr>
+        <tr><td>Fixed-rules scoring; Gemini explains, never decides</td><td>Agreed approach, Marketing lead 10-07</td></tr>
+      </table>
+    </div>
+    <div class="panel mock">
+      <h3>◌ Still open</h3>
+      <ul>
+        <li><b>Cloud Run or Agent Platform for NP:</b> check whether Agent Platform can keep uploads in memory only, then a one-page decision record with the platform owners before the NP Terraform.</li>
+        <li>Agree the GE import with the GE platform team.</li>
+        <li><b>Can GE take a CSV upload and return the workbook</b> through our agent? Test it in NP.</li>
+        <li>How the weekly run gets RB2B data without a manual upload.</li>
+        <li>Salesforce read access (needed by Nov 20 for the full version), and whether the check runs as the app's service account or with each user's own permissions through GE's OAuth flow (tech lead, 10-26).</li>
+        <li>GE seats: Marketing's end-user list this week, since seats are slow to add.</li>
+        <li>Usage metrics for the pilot: one log line per run, counts only.</li>
+        <li>When the AI gateway is ready; the model is already an env var, so switching is a config change.</li>
+        <li>DEP (drafting; a new one for every use case): real RB2B files in NP during the review? Is the Gemini <code>global</code> endpoint OK?</li>
+        <li>Check NP's log sink keeps no personal data (the lab keeps no app logs).</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel priv" style="margin-top:12px">
+    <h3>Privacy and access rules (every environment)</h3>
+    <ul>
+      <li>Uploaded RB2B files are <b>held in memory only</b>, never saved in any project. The workbook is only for the user who ran the check; it downloads once and is deleted then, or after 30 idle minutes.</li>
+      <li>Names, emails and LinkedIn URLs <b>never go to the model</b>; they're only in the workbook.</li>
+      <li>Private only: Google sign-in (IAP) or GE seat; company.example accounts. No public access.</li>
+      <li>No <code>.gcloud/</code>, <code>.env</code> or data in the repo or the image.</li>
+    </ul>
+  </div>
+
+  <div class="src">Sources: Agentic Modularity 10-15 · standups 10-05 → 10-29 · Marketing syncs 10-21, 10-29 · team chat 10-27, 10-30 · standup 11-03 · KB 23 §9, 26 §0, 28</div>
+</div>
+</body>
+</html>

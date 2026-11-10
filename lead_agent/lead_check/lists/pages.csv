@@ -1,0 +1,4 @@
+kind,pattern,note
+contact,^(/[a-z]{2}(-[a-z]{2})?)?/contact(-us)?(/|$),"/contact, /contact-us, /fr/contact… Contact-center service pages don't count."
+service,^(/[a-z]{2}(-[a-z]{2})?)?/solutions/ai-data(/|$),"AI data services: training data, annotation, collection, physical AI, generative AI"
+article,^(/[a-z]{2}(-[a-z]{2})?)?/insights/data-and-ai(/|$),AI articles and insights

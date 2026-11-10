@@ -1,0 +1,169 @@
+city,state,country
+Chennai,TN,India
+Coimbatore,TN,India
+Madurai,TN,India
+Erode,TN,India
+Hosur,TN,India
+Tiruchirappalli,TN,India
+Salem,TN,India
+Lagos,LA,Nigeria
+Lekki,LA,Nigeria
+Ikeja,LA,Nigeria
+Gaborone,GA,Botswana
+Panaji,GA,India
+Gangtok,SK,India
+Dimapur,NL,India
+Kohima,NL,India
+Rio de Janeiro,RJ,Brazil
+Lahore,PB,Pakistan
+Faisalabad,PB,Pakistan
+Rawalpindi,PB,Pakistan
+London,ENG,United Kingdom
+Dublin,L,Ireland
+Dún Laoghaire,L,Ireland
+Swords,L,Ireland
+Cork,M,Ireland
+Limerick,M,Ireland
+Askeaton,M,Ireland
+Galway,C,Ireland
+Belfast,,United Kingdom
+Edinburgh,,United Kingdom
+Glasgow,,United Kingdom
+Cardiff,,United Kingdom
+Paris,IDF,France
+Berlin,BE,Germany
+Munich,,Germany
+Frankfurt am Main,,Germany
+Hamburg,,Germany
+Amsterdam,,Netherlands
+Rotterdam,,Netherlands
+Zurich,,Switzerland
+Geneva,,Switzerland
+Madrid,,Spain
+Barcelona,,Spain
+Lisbon,,Portugal
+Milan,,Italy
+Stockholm,,Sweden
+Copenhagen,,Denmark
+Tokyo,,Japan
+Osaka,,Japan
+Kawaguchi,,Japan
+Seoul,,South Korea
+Gangnam-gu,,South Korea
+Busan,,South Korea
+Beijing,,China
+Shanghai,,China
+Shenzhen,,China
+Hangzhou,,China
+Nanjing,,China
+Guangzhou,,China
+Hong Kong,,Hong Kong
+Taipei,,Taiwan
+Singapore,,Singapore
+Kuala Lumpur,,Malaysia
+Petaling Jaya,,Malaysia
+Puchong,,Malaysia
+Bangkok,,Thailand
+Hanoi,,Vietnam
+Ho Chi Minh City,,Vietnam
+Jakarta,,Indonesia
+East Jakarta,,Indonesia
+West Jakarta,,Indonesia
+South Jakarta,,Indonesia
+Bekasi,,Indonesia
+Bandung,,Indonesia
+Surabaya,,Indonesia
+Tangerang,,Indonesia
+Semarang,,Indonesia
+Denpasar,,Indonesia
+Quezon City,,Philippines
+Manila,,Philippines
+Makati City,,Philippines
+Caloocan,,Philippines
+Pasig,,Philippines
+San Juan,00,Philippines
+Mandaluyong,,Philippines
+Taguig,,Philippines
+Paranaque City,,Philippines
+City of Muntinlupa,,Philippines
+Las Pias,,Philippines
+Davao City,,Philippines
+Cebu City,,Philippines
+Lahug,,Philippines
+Cagayan de Oro,,Philippines
+Tarlac City,,Philippines
+Marilao,,Philippines
+Clark,03,Philippines
+Angeles City,,Philippines
+Dasmarias,,Philippines
+Carmona,40,Philippines
+Batangas,,Philippines
+Calamba,,Philippines
+Imus,,Philippines
+Bacoor,,Philippines
+Baguio City,,Philippines
+Iloilo City,,Philippines
+Bacolod City,,Philippines
+Dagupan,,Philippines
+Urdaneta,01,Philippines
+General Trias,,Philippines
+Antipolo City,,Philippines
+Olongapo City,,Philippines
+Cabanatuan City,,Philippines
+Iligan,,Philippines
+Maramag,,Philippines
+Zamboanga City,,Philippines
+Guatemala City,,Guatemala
+Quetzaltenango,,Guatemala
+San Salvador,,El Salvador
+Nairobi,,Kenya
+Abuja,,Nigeria
+Ibadan,,Nigeria
+Benin City,,Nigeria
+Enugu,,Nigeria
+Johannesburg,,South Africa
+Cape Town,,South Africa
+Durban,,South Africa
+Accra,,Ghana
+Addis Ababa,,Ethiopia
+Kigali,,Rwanda
+Kampala,,Uganda
+Harare,,Zimbabwe
+Yaound,,Cameroon
+Douala,,Cameroon
+Luanda,,Angola
+Antananarivo,,Madagascar
+Casablanca,,Morocco
+Cairo,,Egypt
+So Paulo,,Brazil
+Belo Horizonte,,Brazil
+Porto Alegre,,Brazil
+Fortaleza,,Brazil
+Buenos Aires,C,Argentina
+Santiago,RM,Chile
+Medelln,,Colombia
+Bogotá,,Colombia
+Lima,LMA,Peru
+Tijuana,,Mexico
+Mexico City,,Mexico
+Santo Domingo,,Dominican Republic
+Istanbul,,Turkey
+Ankara,,Turkey
+Sofia,,Bulgaria
+Bucharest,,Romania
+Belgrade,,Serbia
+Tirana,,Albania
+Pristina,,Kosovo
+Sarajevo,,Bosnia and Herzegovina
+Dubai,,United Arab Emirates
+Riyadh,,Saudi Arabia
+Jeddah,,Saudi Arabia
+Dhaka,,Bangladesh
+Kathmandu,,Nepal
+Islamabad,,Pakistan
+Karachi,,Pakistan
+Tel Aviv,,Israel
+Sydney,NSW,Australia
+Melbourne,VIC,Australia
+Brisbane,QLD,Australia
+Auckland,AUK,New Zealand

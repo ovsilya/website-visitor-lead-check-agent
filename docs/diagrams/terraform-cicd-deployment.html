@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MDL Deployment — GitHub, Terraform, CI/CD, GCP</title>
+<style>
+  :root{
+    --purple:#1F3A5F; --purple2:#2E5E8C; --purple3:#7FA7CF;
+    --green:#5FB709; --greenbg:#eaf6d8;
+    --teal:#128a7d; --tealbg:#dbf3ef;
+    --amber:#B06A00; --amberbg:#fbeede;
+    --red:#c0392b; --redbg:#fbe6e3;
+    --blue:#1f6fb2; --bluebg:#e4eff9;
+    --ink:#2A2432; --muted:#6b6675; --line:#e2ddec; --card:#fff; --bg:#f4f1f8;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);padding:20px;-webkit-font-smoothing:antialiased;}
+  .page{max-width:1200px;margin:0 auto;background:var(--card);border-radius:14px;box-shadow:0 8px 30px rgba(75,40,109,.12);padding:22px 26px 20px;}
+  .brand{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--purple2);font-weight:700;}
+  h1{font-size:21px;margin:3px 0 2px;color:var(--purple);}
+  .cap{font-size:12px;color:var(--muted);margin:3px 0 4px;line-height:1.5;}
+  .meta{font-size:10.5px;color:var(--muted);margin-bottom:14px;}
+  code{background:#f2f0f6;border-radius:4px;padding:1px 5px;font-size:10px;color:var(--purple);}
+  h2{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--purple2);margin:18px 0 9px;}
+
+  .pipe{display:flex;align-items:stretch;gap:6px;flex-wrap:wrap;}
+  .node{flex:1;min-width:120px;border-radius:9px;padding:9px 8px;text-align:center;display:flex;flex-direction:column;justify-content:center;}
+  .node .t{font-size:9px;text-transform:uppercase;letter-spacing:.05em;font-weight:800;margin-bottom:3px;}
+  .node .n{font-size:11px;font-weight:700;line-height:1.2;}
+  .node .d{font-size:9.5px;color:var(--muted);margin-top:3px;line-height:1.3;}
+  .arrow{display:flex;align-items:center;justify-content:center;font-size:18px;color:var(--purple3);font-weight:700;flex:none;}
+  .n-you{background:var(--amberbg);border:1px dashed #e0b877;} .n-you .t{color:var(--amber);}
+  .n-gh{background:#f0eef4;border:1px solid #d8d2e2;}
+  .n-ci{background:var(--bluebg);border:1px solid #c4ddf1;} .n-ci .t{color:var(--blue);}
+  .n-key{background:#fff;border:1px solid var(--line);}
+  .n-gcp{background:linear-gradient(135deg,#1F3A5F,#2E5E8C);color:#fff;box-shadow:0 3px 10px rgba(75,40,109,.28);} .n-gcp .t{color:#d9c7f0;} .n-gcp .d{color:#e9dcff;}
+  .n-out{background:var(--greenbg);border:1px solid #cfe7a8;} .n-out .t{color:#3c6b00;}
+  .n-ge{background:var(--tealbg);border:1px solid #bfe6df;} .n-ge .t{color:var(--teal);}
+
+  .lane{border:1px solid var(--line);border-radius:11px;padding:10px 12px 12px;margin-top:10px;}
+  .lane .lh{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:8px;}
+  .lane .lh b{font-size:12.5px;color:var(--purple);}
+  .lane .lh span{font-size:10.5px;color:var(--muted);}
+  .lane.infra{background:#faf8fd;}
+  .lane.app{background:#f7fbfe;}
+
+  .band{margin-top:9px;background:#f6f5f9;border:1px solid var(--line);border-radius:9px;padding:9px 11px;}
+  .band .lab{font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);font-weight:700;margin-bottom:6px;}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;}
+  .chip{font-size:10px;background:#fff;border:1px solid var(--line);border-radius:20px;padding:3px 9px;}
+  .chip b{color:var(--purple);}
+  .chip.ai{background:#efe7f7;border-color:#dcc9ee;}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;}
+  .three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px;}
+  .panel{border-radius:10px;padding:10px 12px;font-size:11px;line-height:1.5;border:1px solid var(--line);background:#fff;}
+  .panel h3{margin:0 0 6px;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--purple2);}
+  .panel ul,.panel ol{margin:0;padding-left:16px;} .panel li{margin:2px 0;}
+  .live{background:var(--greenbg);border-color:#cfe7a8;} .live h3{color:#3c6b00;}
+  .mock{background:var(--amberbg);border-color:#eccfa6;} .mock h3{color:var(--amber);}
+  .info{background:#eef4fb;border-color:#cfe0f2;} .info h3{color:var(--blue);}
+  .warn{background:var(--redbg);border-color:#f0c9c3;} .warn h3{color:var(--red);}
+
+  .envs{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:6px;align-items:stretch;}
+  .env{border-radius:10px;padding:10px 12px;font-size:10.5px;line-height:1.45;}
+  .env .t{font-size:9px;text-transform:uppercase;letter-spacing:.05em;font-weight:800;margin-bottom:3px;}
+  .env .n{font-size:11.5px;font-weight:700;margin-bottom:4px;}
+  .e-lab{background:var(--amberbg);border:1px dashed #e0b877;} .e-lab .t{color:var(--amber);}
+  .e-np{background:var(--bluebg);border:1px solid #c4ddf1;} .e-np .t{color:var(--blue);}
+  .e-pr{background:var(--greenbg);border:1px solid #cfe7a8;} .e-pr .t{color:#3c6b00;}
+
+  table{width:100%;border-collapse:collapse;font-size:10.5px;margin-top:4px;}
+  th{text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--line);padding:5px 6px;}
+  td{border-bottom:1px solid #f0edf5;padding:5px 6px;vertical-align:top;line-height:1.4;}
+  td:first-child{font-weight:700;color:var(--purple);white-space:nowrap;}
+  .src{margin-top:12px;font-size:9.5px;color:#9791a3;text-align:right;}
+  @media (max-width:820px){.two,.three{grid-template-columns:1fr;} .envs{grid-template-columns:1fr;} .envs .arrow{transform:rotate(90deg);} }
+  @media print{body{background:#fff;padding:0;} .page{box-shadow:none;border-radius:0;max-width:none;} @page{size:landscape;margin:9mm;}}
+</style>
+</head>
+<body><div style="font:12px/1.4 system-ui,sans-serif;background:#fff8e1;border:1px solid #f0d58a;color:#5c4400;padding:6px 10px;margin:0 0 10px;border-radius:6px">Anonymized portfolio version: people, company, project IDs and client accounts are replaced with roles or fictional names. The legacy weekly-report comparison tool shown here is not included in this repo.</div>
+<div class="page">
+  <div class="brand">the company · Internal FDE program · MDL lead check</div>
+  <h1>How the MDL app gets deployed: GitHub → Terraform → CI/CD → GCP</h1>
+  <div class="cap">No one changes the Marketing projects by hand. Every change is code in GitHub, reviewed in a pull request by the platform reviewers, then applied by a robot (the pipeline) using a service account. <b>Two repos, two lanes:</b> the infrastructure (what exists in the project) and the app (the code that runs on it).</div>
+  <div class="meta">NP <code>marketing-np</code> · Prod <code>marketing-prod</code> · Infra repo <code>tf-infra-marketing</code> · App repo <code>mdl-lead-check</code> (company org, to create) · App on Cloud Run behind IAP · Today's MVP: lab <code>lab-project</code></div>
+
+  <h2>Lane 1 · Infrastructure: "what exists in the project" (Terraform)</h2>
+  <div class="lane infra">
+    <div class="lh"><b>Repo <code>tf-infra-marketing</code></b><span>Made by the GCP Project Factory. Its workspace files (backend, provider, Cloud Build configs) came in bootstrap PR #1, merged 10-30. MDL resources go in <code>terraform/</code> as new <code>.tf</code> files, with values in <code>np.tfvars</code>. Prod has its own repo, <code>tf-infra-marketing-prod</code>.</span></div>
+    <div class="pipe">
+      <div class="node n-you"><div class="t">1 · You, on a branch</div><div class="n">Edit <code>.tf</code> files</div><div class="d">"I want a Cloud Run service, a service account, Vertex AI on…"</div></div>
+      <div class="arrow">→</div>
+      <div class="node n-gh"><div class="t">2 · GitHub</div><div class="n">Open a pull request</div><div class="d">You can't push straight to <code>main</code></div></div>
+      <div class="arrow">→</div>
+      <div class="node n-ci"><div class="t">3 · Plan (tag)</div><div class="n"><code>terraform plan</code></div><div class="d">Push tag <code>marketing-np.plan.v0.0.1</code> → Cloud Build "Terraform-Plan". Preview in the Cloud Build log: "+3 to create, 0 to destroy"</div></div>
+      <div class="arrow">→</div>
+      <div class="node n-gh"><div class="t">4 · Review</div><div class="n">the platform reviewers approve</div><div class="d">They read the code and the plan</div></div>
+      <div class="arrow">→</div>
+      <div class="node n-ci"><div class="t">5 · Merge, then apply (tag)</div><div class="n"><code>terraform apply</code></div><div class="d">Tag the merged <code>main</code> commit <code>marketing-np.v1.0.0</code> → Cloud Build "Terraform-Apply", run as <code>iac-sa</code></div></div>
+      <div class="arrow">→</div>
+      <div class="node n-gcp"><div class="t">6 · GCP project (NP)</div><div class="n">Resources created</div><div class="d">APIs · service accounts + roles · Artifact Registry · the service · IAP + testers</div></div>
+    </div>
+    <div class="band">
+      <div class="lab">Terraform remembers what it built in a <b>state file</b> (in a GCS bucket in the project)</div>
+      <div class="chips">
+        <span class="chip"><b>Code</b> = what you want</span>
+        <span class="chip"><b>State</b> = what Terraform built last time</span>
+        <span class="chip"><b>Plan</b> = the difference between the two</span>
+        <span class="chip"><b>Apply</b> = make the project match the code</span>
+        <span class="chip">Delete a block from the code → Terraform deletes the resource</span>
+      </div>
+    </div>
+  </div>
+
+  <h2>Lane 2 · App code: "the program that runs" (build and release)</h2>
+  <div class="lane app">
+    <div class="lh"><b>Repo <code>mdl-lead-check</code> (new, separate, company org)</b><span>The ADK agent, the lead check and its lists, the legacy script for comparison, tests, Dockerfile. Same maintainer team and PR rule as the infra repo.</span></div>
+    <div class="pipe">
+      <div class="node n-you"><div class="t">1 · You, on a branch</div><div class="n">Change the agent</div><div class="d">e.g. update the account lists</div></div>
+      <div class="arrow">→</div>
+      <div class="node n-gh"><div class="t">2 · GitHub</div><div class="n">Pull request</div><div class="d"><code>.gcloud/</code>, <code>.env</code>, data never committed</div></div>
+      <div class="arrow">→</div>
+      <div class="node n-ci"><div class="t">3 · CI</div><div class="n">Tests run</div><div class="d">Lead-check tests + the ground-truth test vs the legacy report must pass</div></div>
+      <div class="arrow">→</div>
+      <div class="node n-gh"><div class="t">4 · Review</div><div class="n">the platform reviewers approve</div><div class="d">Merge to <code>main</code></div></div>
+      <div class="arrow">→</div>
+      <div class="node n-ci"><div class="t">5 · CD</div><div class="n">Build image → release</div><div class="d">Cloud Build builds the image and pushes it to Artifact Registry (NP); the new image is rolled out to Cloud Run</div></div>
+      <div class="arrow">→</div>
+      <div class="node n-out"><div class="t">6 · Running app (NP)</div><div class="n">New version live</div><div class="d">New Cloud Run revision, still behind IAP</div></div>
+    </div>
+  </div>
+
+  <div class="three">
+    <div class="panel info">
+      <h3>CI vs CD</h3>
+      <ul>
+        <li><b>CI</b> (continuous integration): a robot checks the change: tests, <code>terraform plan</code>.</li>
+        <li><b>CD</b> (continuous delivery/deployment): a robot ships it: <code>terraform apply</code>, build, release.</li>
+        <li>Here the robot is <b>Cloud Build</b> in the NP project, not GitHub Actions. It's started by <b>git tags</b>, not by PRs: a <code>.plan</code> tag runs plan and a <code>.v</code> tag runs apply. The triggers already exist.</li>
+        <li><b>App lane, suggested:</b> a Cloud Build trigger on the app repo, same as the infra repo. No keys and no WIF needed. GitHub Actions would need WIF instead. Agree with platform lead.</li>
+      </ul>
+    </div>
+    <div class="panel info">
+      <h3>Who's allowed to do what</h3>
+      <ul>
+        <li><b>You:</b> read the project, write code, open PRs. Not Owner.</li>
+        <li><b><code>iac-sa</code></b>: the Terraform robot. Powerful: creates and changes resources.</li>
+        <li><b><code>cicd-sa</code></b>: the release robot. Deploys new app versions only.</li>
+        <li><b>The app's own SA</b> (e.g. <code>mdl-agent-run</code>): only Vertex AI User + Logs Writer.</li>
+        <li>Never act as <code>iac-sa</code> yourself; that skips the review.</li>
+      </ul>
+    </div>
+    <div class="panel info">
+      <h3>How GitHub and GCP connect here</h3>
+      <ul>
+        <li>Not WIF: GCP pulls from GitHub. Cloud Build's <b>GitHub connection</b> (a GitHub App) watches the repo for tags and runs the build <b>inside GCP</b> as <code>iac-sa</code>.</li>
+        <li>No keys on GitHub. Cloud Build reads company modules with a deploy key kept in Secret Manager.</li>
+        <li>The factory already did this, so <b>no bootstrap is needed</b>. WIF (the platform team's bootstrap, <code>a WIF module</code>) is only for GitHub Actions pipelines.</li>
+      </ul>
+    </div>
+  </div>
+
+  <h2>Three environments: where each version runs</h2>
+  <div class="envs">
+    <div class="env e-lab">
+      <div class="t">My lab project · now → pilot</div>
+      <div class="n"><code>lab-project</code></div>
+      Manual deploys (<code>deploy.sh</code>) are fine here. Runs the MVP today and the beta from Nov 5. Testers: four Marketing testers. No app logs kept. Expires ~Jan 12 (+90 days).
+    </div>
+    <div class="arrow">→</div>
+    <div class="env e-np">
+      <div class="t">Marketing NP (Dev) · from setup</div>
+      <div class="n"><code>marketing-np</code></div>
+      Terraform + PRs only. Bootstrap merged; Vertex AI and IAP APIs requested. Starts with sample data; real RB2B files once the DEP allows. Testers move here when it works end to end.
+    </div>
+    <div class="arrow">→</div>
+    <div class="env e-pr">
+      <div class="t">Marketing Prod · full version</div>
+      <div class="n"><code>marketing-prod</code></div>
+      Same Terraform code, different settings (project ID, users). Promote what passed in NP. Needs the approved DEP. Owned by the Marketing platform team after handover.
+    </div>
+  </div>
+
+  <h2>How users reach it, and where Gemini Enterprise fits</h2>
+  <div class="pipe">
+    <div class="node n-you"><div class="t">Testing → NP/Prod (Cloud Run)</div><div class="n">Marketing user</div><div class="d">opens the app URL, Google sign-in (IAP)</div></div>
+    <div class="arrow">→</div>
+    <div class="node n-gcp"><div class="t">Spoke: Marketing project</div><div class="n">MDL agent (ADK)</div><div class="d">Cloud Run: upload page + agent, behind IAP</div></div>
+    <div class="arrow">→</div>
+    <div class="node n-key"><div class="t">Model</div><div class="n">Gemini on Vertex AI</div><div class="d">later via the central AI gateway in the hub</div></div>
+  </div>
+  <div class="pipe" style="margin-top:6px">
+    <div class="node n-you"><div class="t">Target (program)</div><div class="n">Marketing user</div><div class="d">chats in Gemini Enterprise, with a GE seat</div></div>
+    <div class="arrow">→</div>
+    <div class="node n-ge"><div class="t">Hub: Gemini Enterprise</div><div class="n">MDL agent listed in GE</div><div class="d">imported by the GE platform team (Terraform), from Cloud Run via A2A</div></div>
+    <div class="arrow">→</div>
+    <div class="node n-gcp"><div class="t">Spoke: Marketing project</div><div class="n">Same agent, same code</div><div class="d">GE only points at it; it still runs in the spoke</div></div>
+  </div>
+
+  <div class="two">
+    <div class="panel live">
+      <h3>✓ Decided</h3>
+      <ul>
+        <li>Use Marketing's existing <code>tf-infra-marketing</code> for infrastructure; a separate repo for the app.</li>
+        <li>Terraform via GitHub only in NP and Prod; PRs to <code>main</code> with the platform reviewers as required reviewers.</li>
+        <li>Both tracks at once: beta testing stays in the lab; NP setup starts now; switch testers to NP as soon as it works.</li>
+        <li><b>Cloud Run behind IAP</b> for the app in NP and Prod (platform lead, 10-30).</li>
+        <li>Bootstrap PR #1 merged (10-30). App repo in the company org, same maintainer team.</li>
+        <li>Raw uploaded CSVs and output workbooks stay in memory only, in every project.</li>
+      </ul>
+    </div>
+    <div class="panel mock">
+      <h3>◌ Still open</h3>
+      <ul>
+        <li><b>Artifact Registry</b>: the API and a Docker repo in NP (<code>northamerica-northeast1</code>). Asked of platform lead 10-30; <code>iac-sa</code> can't create them.</li>
+        <li><b>How the app repo ships images</b>: a Cloud Build trigger (suggested) or GitHub Actions + WIF.</li>
+        <li><b>Reuse another team's lead-triage agent Terraform</b> in the same infra repo (10-29).</li>
+        <li>Reviewers' GitHub usernames, for required reviewers. Limit who can push <code>marketing-*</code> tags.</li>
+        <li><b>Check NP's log sink</b>: it may keep Cloud Run logs, unlike the lab.</li>
+        <li>Real RB2B files in NP before the DEP is approved (data governance).</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="src">Sources: team chat 10-27, 10-30 · standups 10-28/29 · tf-infra repo + NP Cloud Build triggers (read 10-27) · Agentic Modularity 10-15 · standups 10-08, 10-19, 10-26 · KB 26 §0, 23 §9</div>
+</div>
+</body>
+</html>

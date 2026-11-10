@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Website-Visitor Lead Check</title>
+<style>
+  :root{
+    --purple:#1F3A5F; --purple2:#2E5E8C; --purple3:#7FA7CF;
+    --green:#5FB709; --greenbg:#eaf6d8; --greenln:#cfe7a8;
+    --teal:#128a7d; --tealbg:#dbf3ef;
+    --amber:#B06A00; --amberbg:#fbeede; --amberln:#eccfa6;
+    --blue:#1f6fb2; --bluebg:#e4eff9;
+    --red:#c0392b; --redbg:#fbe6e3; --redln:#f0c9c2;
+    --ink:#2A2432; --muted:#6b6675; --line:#e2ddec; --card:#fff; --bg:#f4f1f8;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);padding:20px;-webkit-font-smoothing:antialiased;}
+  .page{max-width:1180px;margin:0 auto;background:var(--card);border-radius:14px;box-shadow:0 8px 30px rgba(75,40,109,.12);padding:22px 26px 20px;}
+  .brand{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--purple2);font-weight:700;}
+  h1{font-size:22px;margin:4px 0 0;color:var(--purple);}
+  .cap{font-size:12.5px;color:var(--muted);margin:3px 0 16px;line-height:1.5;}
+  code{background:#f2f0f6;border-radius:4px;padding:1px 5px;font-size:11px;color:var(--purple);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;}
+
+  .chatwrap{display:grid;grid-template-columns:1fr 2.1fr;gap:16px;align-items:start;}
+  .steps{display:flex;flex-direction:column;gap:6px;}
+  .stp{display:flex;gap:8px;align-items:flex-start;font-size:12px;line-height:1.45;border:1px solid var(--line);border-radius:9px;padding:8px 11px;background:#fff;}
+  .stp .k{flex:none;width:20px;height:20px;border-radius:50%;background:var(--purple);color:#fff;font-weight:800;font-size:10px;display:flex;align-items:center;justify-content:center;}
+  .illus{font-size:11px;color:var(--muted);font-style:italic;line-height:1.45;padding:2px 4px;}
+  .drop{border:1.5px dashed var(--purple3);border-radius:11px;background:#faf8fd;padding:16px 12px;text-align:center;font-size:12px;color:var(--purple);cursor:pointer;transition:background .1s;}
+  .drop:hover,.drop.over{background:#f1ebf8;}
+  .drop b{display:block;font-size:13px;margin-bottom:2px;}
+  .drop small{color:var(--muted);}
+  .pending{display:flex;flex-wrap:wrap;gap:5px;}
+  .pf{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;background:#f3eef9;color:var(--purple);border-radius:6px;padding:3px 7px;display:inline-flex;gap:6px;align-items:center;}
+  .pf button{border:none;background:none;color:var(--purple3);cursor:pointer;padding:0;font-size:12px;line-height:1;}
+
+  .chat{border:1px solid var(--line);border-radius:12px;background:#f8f7fb;padding:12px;display:flex;flex-direction:column;gap:9px;min-height:520px;}
+  .chat .lbl{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700;}
+  .log{display:flex;flex-direction:column;gap:9px;flex:1;}
+  .empty{margin:auto;text-align:center;color:var(--muted);font-size:12px;line-height:1.6;max-width:360px;}
+  .u{align-self:flex-end;max-width:70%;background:var(--purple);color:#fff;border-radius:12px 12px 3px 12px;padding:8px 11px;font-size:12px;line-height:1.45;white-space:pre-wrap;}
+  .u .file{display:inline-block;background:rgba(255,255,255,.16);border-radius:6px;padding:2px 7px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.5px;margin:0 4px 4px 0;}
+  .a{align-self:flex-start;width:100%;background:#fff;border:1px solid var(--line);border-radius:12px 12px 12px 3px;padding:11px 14px;font-size:12px;line-height:1.5;}
+  .a .meta{font-size:10.5px;color:var(--muted);}
+  .a .sum{font-size:14px;font-weight:800;color:var(--purple);margin:3px 0 7px;}
+  .a .sec{font-size:9.8px;text-transform:uppercase;letter-spacing:.07em;font-weight:800;color:var(--purple2);margin:10px 0 4px;}
+  .lead{display:grid;grid-template-columns:120px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid var(--line);}
+  .sec + .lead{border-top:none;}
+  .lead .acct{font-weight:800;}
+  .lead .why{color:var(--muted);font-size:11px;}
+  .lead .nx{font-size:11px;} .lead .nx b{color:var(--purple);}
+  .tagy,.tagn,.tagw,.tagr{display:inline-block;font-size:9.5px;font-weight:800;border-radius:20px;padding:1px 7px;margin-top:2px;}
+  .tagy{background:var(--greenbg);color:#3c6b00;} .tagn{background:var(--bluebg);color:var(--blue);}
+  .tagw{background:var(--amberbg);color:var(--amber);} .tagr{background:var(--redbg);color:var(--red);}
+  .pg{font-size:10.8px;margin-top:2px;display:flex;flex-wrap:wrap;gap:3px 9px;}
+  .pg a{color:var(--blue);text-decoration:underline;text-underline-offset:2px;word-break:break-all;}
+  .pg .more{color:var(--muted);}
+  .quiet.sub{padding-top:0;font-size:10.5px;}
+  .subsec{font-size:10.5px;font-weight:700;color:var(--amber);margin:8px 0 2px;padding-top:6px;border-top:1px dashed var(--line);}
+  .quiet{color:var(--muted);font-size:11px;padding:4px 0;}
+  .tiers{display:flex;gap:5px;flex-wrap:wrap;margin-top:2px;}
+  .tiers span{font-size:10.5px;border-radius:6px;padding:2px 8px;font-weight:700;}
+  .t1{background:#D9F2C6;color:#3c6b00;} .t2{background:#DCE9F7;color:#1f4f80;} .t3{background:#EFE3CE;color:#7a5418;}
+  .t4{background:#F0F0F0;color:#555;} .t5{background:#EDE4F2;color:var(--purple);}
+  .left{margin-top:9px;padding-top:8px;border-top:1px dashed var(--line);font-size:10.8px;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .dl{flex:none;background:var(--purple);color:#fff;border:none;border-radius:20px;padding:4px 11px;font-size:10.5px;font-weight:700;cursor:pointer;}
+  .dl:disabled{opacity:.5;cursor:default;}
+  .note{border-top:1px solid var(--line);margin-top:9px;padding-top:8px;}
+  .a p{margin:0 0 6px;} .a ul{margin:0 0 6px;padding-left:18px;} .a > div > :last-child{margin-bottom:0;}
+  .a table{border-collapse:collapse;font-size:11px;margin:4px 0;} .a td,.a th{border-bottom:1px solid var(--line);padding:3px 8px;text-align:left;}
+  .a h3,.a h4{font-size:11px;color:var(--purple2);margin:8px 0 3px;text-transform:uppercase;letter-spacing:.05em;}
+  .err{background:var(--redbg);border:1px solid var(--redln);color:var(--red);border-radius:10px;padding:8px 11px;font-size:12px;}
+  .typing{align-self:flex-start;font-size:11.5px;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:12px 12px 12px 3px;padding:8px 12px;}
+  .typing i{display:inline-block;width:5px;height:5px;border-radius:50%;background:var(--purple3);margin-left:3px;animation:b 1s infinite;}
+  .typing i:nth-child(2){animation-delay:.15s} .typing i:nth-child(3){animation-delay:.3s}
+  @keyframes b{0%,80%,100%{opacity:.25}40%{opacity:1}}
+  .follow{display:flex;gap:6px;flex-wrap:wrap;}
+  .follow button{font-size:10.8px;border:1px solid var(--purple3);color:var(--purple);border-radius:20px;padding:3px 10px;background:#fff;cursor:pointer;font-family:inherit;}
+  .follow button:hover{background:#f3eef9;}
+  .composer{display:flex;gap:8px;align-items:flex-end;border:1px solid var(--line);border-radius:12px;background:#fff;padding:6px 6px 6px 8px;}
+  .composer textarea{flex:1;border:none;outline:none;resize:none;font:inherit;font-size:12.5px;color:var(--ink);padding:6px 2px;max-height:120px;background:transparent;}
+  .clip{border:none;background:none;font-size:16px;cursor:pointer;color:var(--purple2);padding:4px 6px;}
+  .send{border:none;background:var(--purple);color:#fff;border-radius:9px;padding:7px 14px;font-weight:700;font-size:12px;cursor:pointer;}
+  .send:disabled{opacity:.45;cursor:default;}
+  .foot{font-size:10.5px;color:var(--muted);margin-top:10px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;}
+  .foot a{color:var(--purple2);}
+  @media (max-width:820px){body{padding:10px;} .page{padding:16px;} .chatwrap{grid-template-columns:1fr;} .lead{grid-template-columns:90px 1fr;}}
+</style>
+</head>
+<body>
+<div class="page">
+  <div class="brand">Marketing AI · beta</div>
+  <h1>Website-Visitor Lead Check</h1>
+  <div class="cap">Upload the raw RB2B file and get a <b>short answer by account tier</b>: the visitors worth acting on, why, and what to do next. Four checks (who · which · what · rule out) and the ranking are fixed rules; AI only writes the summary.</div>
+
+  <div class="chatwrap">
+    <div class="steps">
+      <div class="stp"><span class="k">1</span><div><b>Upload the raw RB2B file</b>, any time: weekly, daily, or any date range.</div></div>
+      <div class="stp"><span class="k">2</span><div>Get the <b>top leads per account</b>, each with page links, the points behind it and a next step, plus <b>account notes</b> where no person was identified.</div></div>
+      <div class="stp"><span class="k">3</span><div><b>Ask follow-ups</b>, download the full list.</div></div>
+      <div class="drop" id="drop"><b>📎 Drop RB2B files here</b><small>.csv exports</small></div>
+      <div class="pending" id="pending"></div>
+      <div class="illus">Uploaded files are held in memory only, never saved, and cleared after 30 idle minutes. The model sees counts, titles and accounts, not the raw file. Each workbook downloads once.</div>
+    </div>
+
+    <div class="chat">
+      <div class="lbl" id="sessionLbl">New conversation</div>
+      <div class="log" id="log">
+        <div class="empty" id="empty">Drop this week's RB2B export on the left, or use 📎 below, then press <b>Send</b>.</div>
+      </div>
+      <div class="follow" id="follow"></div>
+      <div class="composer">
+        <button class="clip" id="clip" title="Attach files" aria-label="Attach files">📎</button>
+        <textarea id="msg" rows="1" placeholder="What's worth acting on in this file?"></textarea>
+        <button class="send" id="send">Send</button>
+      </div>
+      <input type="file" id="file" accept=".csv,.xlsx" multiple hidden>
+    </div>
+  </div>
+
+  <div class="foot"><span>Scoring: the agreed four checks (fixed rules; lists in <code>lead_check/lists</code>) · model: Gemini on Vertex AI</span><span><span id="who"></span><a href="#" id="newChat">New conversation</a><span id="devLink" hidden> · <a href="/dev-ui/?app=lead_agent" target="_blank">Developer view</a></span></span></div>
+</div>
+
+<script src="vendor/marked-12.0.2.min.js"></script>
+<script src="vendor/purify-3.1.6.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

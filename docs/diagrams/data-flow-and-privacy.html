@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MDL Lead Check — Data Flow</title>
+<style>
+  :root{
+    --purple:#1F3A5F; --purple2:#2E5E8C; --purple3:#7FA7CF;
+    --green:#5FB709; --greenbg:#eaf6d8;
+    --teal:#128a7d; --tealbg:#dbf3ef;
+    --amber:#B06A00; --amberbg:#fbeede;
+    --red:#c0392b; --redbg:#fbe6e3;
+    --blue:#1f6fb2; --bluebg:#e4eff9;
+    --ink:#2A2432; --muted:#6b6675; --line:#e2ddec; --card:#fff; --bg:#f4f1f8;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);padding:20px;-webkit-font-smoothing:antialiased;}
+  .page{max-width:1240px;margin:0 auto;background:var(--card);border-radius:14px;box-shadow:0 8px 30px rgba(75,40,109,.12);padding:22px 26px 20px;}
+  .brand{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--purple2);font-weight:700;}
+  h1{font-size:21px;margin:3px 0 2px;color:var(--purple);}
+  .cap{font-size:12px;color:var(--muted);margin:3px 0 4px;line-height:1.5;}
+  h2{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--purple2);margin:18px 0 9px;}
+  code{background:#f2f0f6;border-radius:4px;padding:1px 5px;font-size:10px;color:var(--purple);}
+
+  .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:10.5px;color:var(--muted);margin:6px 0 4px;}
+  .legend span{display:inline-flex;align-items:center;gap:6px;}
+  .sw{display:inline-block;width:26px;height:0;border-top:2.5px solid;}
+  .sw.pd{border-color:var(--red);} .sw.np{border-color:var(--purple2);} .sw.lt{border-color:var(--purple3);border-top-style:dashed;}
+
+  svg{width:100%;height:auto;display:block;}
+  svg text{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;}
+  .t{font-size:13px;font-weight:700;fill:var(--ink);}
+  .s{font-size:10.5px;fill:var(--muted);}
+  .k{font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;}
+  .w{fill:#fff;}
+
+  table{width:100%;border-collapse:collapse;font-size:10.5px;}
+  th{text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--line);padding:5px 6px;}
+  td{border-bottom:1px solid #f0edf5;padding:6px;vertical-align:top;line-height:1.42;}
+  td:first-child{font-weight:700;color:var(--purple);white-space:nowrap;}
+  .pill{display:inline-block;font-size:9px;font-weight:800;border-radius:20px;padding:1px 8px;white-space:nowrap;}
+  .p-yes{background:var(--redbg);color:var(--red);} .p-no{background:var(--greenbg);color:#3c6b00;} .p-low{background:var(--amberbg);color:var(--amber);}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  .panel{border-radius:10px;padding:10px 12px;font-size:11px;line-height:1.5;border:1px solid var(--line);background:#fff;}
+  .panel h3{margin:0 0 6px;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--purple2);}
+  .panel ul{margin:0;padding-left:17px;} .panel li{margin:2px 0;}
+  .info{background:#eef4fb;border-color:#cfe0f2;} .info h3{color:var(--blue);}
+  .later{background:#f6f5f9;} .later h3{color:var(--muted);}
+  .open{background:var(--amberbg);border-color:#eccfa6;} .open h3{color:var(--amber);}
+  .src{margin-top:12px;font-size:9.5px;color:#9791a3;text-align:right;}
+  @media (max-width:900px){.grid{grid-template-columns:1fr;} .scroll{overflow-x:auto;} .scroll svg{min-width:900px;}}
+  @media print{body{background:#fff;padding:0;} .page{box-shadow:none;border-radius:0;max-width:none;padding:0;} @page{size:landscape;margin:8mm;} h2{break-after:avoid;} .panel,tr{break-inside:avoid;} .grid{grid-template-columns:1fr 1fr 1fr;}}
+</style>
+</head>
+<body><div style="font:12px/1.4 system-ui,sans-serif;background:#fff8e1;border:1px solid #f0d58a;color:#5c4400;padding:6px 10px;margin:0 0 10px;border-radius:6px">Anonymized portfolio version: people, company, project IDs and client accounts are replaced with roles or fictional names. The legacy weekly-report comparison tool shown here is not included in this repo.</div>
+<div class="page">
+  <div class="brand">the company · Marketing · MDL lead check</div>
+  <h1>Data flow: MDL lead check</h1>
+  <div class="cap">Each week a Marketing user uploads the RB2B website-visitor export. The app checks every visitor against fixed rules and ranks the ones worth following up. Gemini writes the explanation, but never sees names, emails or LinkedIn URLs and never decides the ranking. Nothing uploaded is saved: the file is held in memory and deleted after 30 minutes without activity. Each user sees only their own results.</div>
+
+  <div class="legend">
+    <span><i class="sw pd"></i>Contains personal data</span>
+    <span><i class="sw np"></i>No names, emails or LinkedIn URLs</span>
+    <span><i class="sw lt"></i>Later phase, not in the first release</span>
+  </div>
+
+  <div class="scroll">
+  <svg viewBox="0 0 1200 560" role="img" aria-label="Data flow from RB2B through the lead check app to the user">
+    <defs>
+      <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c0392b"/></marker>
+      <marker id="ap" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#2E5E8C"/></marker>
+      <marker id="al" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7FA7CF"/></marker>
+      <marker id="ag" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#9791a3"/></marker>
+    </defs>
+
+    <!-- company GCP boundary -->
+    <rect x="262" y="28" width="650" height="520" rx="16" fill="#f3eefa" stroke="#7FA7CF" stroke-width="2"/>
+    <text x="282" y="52" class="k" fill="#1F3A5F">company Google Cloud · Marketing's own project · private</text>
+    <text x="282" y="68" class="s">No public access. Built and changed only through reviewed code (Terraform).</text>
+
+    <!-- RB2B -->
+    <rect x="20" y="70" width="210" height="96" rx="11" fill="#fbeede" stroke="#e0b877" stroke-dasharray="4 3"/>
+    <text x="34" y="92" class="k" fill="#B06A00">Source · outside company</text>
+    <text x="34" y="112" class="t">RB2B</text>
+    <text x="34" y="130" class="s">Marketing's website-visitor tool.</text>
+    <text x="34" y="145" class="s">Weekly CSV export, 23 fields.</text>
+
+    <!-- user -->
+    <rect x="20" y="250" width="210" height="104" rx="11" fill="#fff" stroke="#e2ddec"/>
+    <text x="34" y="272" class="k" fill="#2E5E8C">Person</text>
+    <text x="34" y="292" class="t">Marketing user</text>
+    <text x="34" y="310" class="s">About 10 named users.</text>
+    <text x="34" y="325" class="s">Downloads the export from RB2B</text>
+    <text x="34" y="340" class="s">and uploads it to the app.</text>
+
+    <!-- Salesforce later -->
+    <rect x="20" y="440" width="210" height="96" rx="11" fill="#f6f5f9" stroke="#b9b2c6" stroke-dasharray="5 4"/>
+    <text x="34" y="462" class="k" fill="#6b6675">Later · read-only</text>
+    <text x="34" y="482" class="t">Salesforce</text>
+    <text x="34" y="500" class="s">"Is this visitor already a contact?"</text>
+    <text x="34" y="515" class="s">"Is this company in active pursuit?"</text>
+
+    <!-- 1: RB2B -> user -->
+    <line x1="125" y1="166" x2="125" y2="246" stroke="#c0392b" stroke-width="2.5" marker-end="url(#ar)"/>
+    <circle cx="125" cy="206" r="10" fill="#c0392b"/><text x="125" y="210" text-anchor="middle" class="k w">1</text>
+
+    <!-- sign-in gate -->
+    <rect x="282" y="252" width="140" height="100" rx="11" fill="#dbf3ef" stroke="#bfe6df"/>
+    <text x="294" y="274" class="k" fill="#128a7d">Sign-in gate</text>
+    <text x="294" y="293" class="t">Google sign-in</text>
+    <text x="294" y="310" class="s">Named company.example</text>
+    <text x="294" y="324" class="s">users only (IAP).</text>
+    <text x="294" y="338" class="s">Everyone else is blocked.</text>
+
+    <!-- 2: user -> gate -->
+    <line x1="230" y1="302" x2="278" y2="302" stroke="#c0392b" stroke-width="2.5" marker-end="url(#ar)"/>
+    <circle cx="254" cy="286" r="10" fill="#c0392b"/><text x="254" y="290" text-anchor="middle" class="k w">2</text>
+
+    <!-- app -->
+    <rect x="440" y="84" width="452" height="306" rx="13" fill="#fff" stroke="#1F3A5F" stroke-width="2"/>
+    <text x="456" y="106" class="k" fill="#1F3A5F">Lead check app (Cloud Run)</text>
+    <text x="456" y="122" class="s">Held in memory only: nothing is written to disk, a bucket or a database.</text>
+
+    <rect x="456" y="140" width="138" height="84" rx="9" fill="#fbe6e3" stroke="#f0c9c3"/>
+    <text x="468" y="160" class="k" fill="#c0392b">Uploaded file</text>
+    <text x="468" y="178" class="s">In memory only. Deleted</text>
+    <text x="468" y="192" class="s">after 30 idle minutes.</text>
+    <text x="468" y="206" class="s">Never saved.</text>
+
+    <rect x="456" y="250" width="138" height="124" rx="9" fill="#f6f5f9" stroke="#e2ddec"/>
+    <text x="468" y="270" class="k" fill="#6b6675">Editable lists</text>
+    <text x="468" y="288" class="s">Target accounts, own</text>
+    <text x="468" y="302" class="s">companies, competitors,</text>
+    <text x="468" y="316" class="s">pages, regions, points.</text>
+    <text x="468" y="334" class="s">Maintained by Marketing.</text>
+    <text x="468" y="352" class="s">No personal data.</text>
+
+    <rect x="614" y="140" width="262" height="84" rx="9" fill="#1F3A5F"/>
+    <text x="628" y="160" class="k" fill="#d9c7f0">Scoring · fixed rules</text>
+    <text x="628" y="179" class="t" fill="#fff" style="fill:#fff">Four checks on every visitor</text>
+    <text x="628" y="196" class="s" style="fill:#e9def7">Role · account tier · pages viewed · rule-outs.</text>
+    <text x="628" y="211" class="s" style="fill:#e9def7">Points rank the leads. No AI decides.</text>
+
+    <rect x="614" y="250" width="262" height="124" rx="9" fill="#fff" stroke="#e2ddec"/>
+    <text x="628" y="270" class="k" fill="#2E5E8C">Results (in memory)</text>
+    <text x="628" y="290" class="t" style="font-size:12px">Chat summary</text>
+    <text x="628" y="305" class="s">Counts, job titles, companies, tiers.</text>
+    <text x="628" y="319" class="s">No names, emails or LinkedIn URLs.</text>
+    <text x="628" y="341" class="t" style="font-size:12px;fill:#c0392b">Workbook (.xlsx)</text>
+    <text x="628" y="356" class="s">Adds names, work emails, LinkedIn.</text>
+
+    <!-- internal arrows -->
+    <path d="M422,302 C436,302 436,182 452,182" fill="none" stroke="#c0392b" stroke-width="2.5" marker-end="url(#ar)"/>
+    <line x1="594" y1="182" x2="610" y2="182" stroke="#c0392b" stroke-width="2.5" marker-end="url(#ar)"/>
+    <path d="M594,300 C606,300 606,232 640,228" fill="none" stroke="#2E5E8C" stroke-width="2" marker-end="url(#ap)"/>
+    <line x1="745" y1="224" x2="745" y2="246" stroke="#c0392b" stroke-width="2.5" marker-end="url(#ar)"/>
+
+    <!-- Gemini -->
+    <rect x="440" y="420" width="290" height="114" rx="11" fill="#efe7f7" stroke="#dcc9ee"/>
+    <text x="454" y="442" class="k" fill="#1F3A5F">Google AI inside company cloud</text>
+    <text x="454" y="461" class="t">Gemini on Vertex AI</text>
+    <text x="454" y="479" class="s">Writes the short summary and answers questions.</text>
+    <text x="454" y="493" class="s">The rules write each lead's reason and next step.</text>
+    <text x="454" y="511" class="s">Never gets names, emails or LinkedIn URLs.</text>
+    <text x="454" y="525" class="s">Not used to train Google's models.</text>
+
+    <!-- 3: results <-> Gemini -->
+    <line x1="660" y1="374" x2="660" y2="416" stroke="#2E5E8C" stroke-width="2.5" marker-end="url(#ap)"/>
+    <line x1="700" y1="416" x2="700" y2="378" stroke="#2E5E8C" stroke-width="2.5" marker-end="url(#ap)"/>
+    <circle cx="680" cy="397" r="10" fill="#2E5E8C"/><text x="680" y="401" text-anchor="middle" class="k w">3</text>
+
+    <!-- Logging -->
+    <rect x="748" y="420" width="144" height="114" rx="11" fill="#f6f5f9" stroke="#e2ddec"/>
+    <text x="760" y="442" class="k" fill="#6b6675">Platform logs</text>
+    <text x="760" y="461" class="t">Cloud Logging</text>
+    <text x="760" y="479" class="s">Build and admin</text>
+    <text x="760" y="493" class="s">audit logs only.</text>
+    <text x="760" y="507" class="s">No personal data.</text>
+    <line x1="820" y1="390" x2="820" y2="416" stroke="#9791a3" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#ag)"/>
+
+    <!-- Salesforce later arrow -->
+    <path d="M230,488 C330,488 360,380 436,372" fill="none" stroke="#7FA7CF" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#al)"/>
+
+    <!-- outputs -->
+    <text x="940" y="52" class="k" fill="#2E5E8C">What the user gets</text>
+
+    <rect x="940" y="84" width="240" height="96" rx="11" fill="#fff" stroke="#e2ddec"/>
+    <text x="954" y="106" class="k" fill="#2E5E8C">On screen</text>
+    <text x="954" y="125" class="t">Chat answer</text>
+    <text x="954" y="143" class="s">Top leads per account with the</text>
+    <text x="954" y="157" class="s">reason and next step. No names.</text>
+    <text x="954" y="171" class="s">Deleted after 30 idle minutes.</text>
+
+    <rect x="940" y="214" width="240" height="110" rx="11" fill="#fbe6e3" stroke="#f0c9c3"/>
+    <text x="954" y="236" class="k" fill="#c0392b">Download · personal data</text>
+    <text x="954" y="255" class="t">Ranked workbook</text>
+    <text x="954" y="273" class="s">Every identified visitor with the</text>
+    <text x="954" y="287" class="s">checks: name, title, work email,</text>
+    <text x="954" y="301" class="s">LinkedIn, city, pages viewed.</text>
+    <text x="954" y="315" class="s">Only to the user who ran it, once.</text>
+
+    <rect x="940" y="350" width="240" height="70" rx="11" fill="#fff" stroke="#e2ddec"/>
+    <text x="954" y="372" class="t" style="font-size:12px">User's company device</text>
+    <text x="954" y="390" class="s">Kept and shared as Marketing handles</text>
+    <text x="954" y="404" class="s">today's manual weekly report.</text>
+
+    <rect x="940" y="446" width="240" height="90" rx="11" fill="#f6f5f9" stroke="#b9b2c6" stroke-dasharray="5 4"/>
+    <text x="954" y="468" class="k" fill="#6b6675">Later</text>
+    <text x="954" y="487" class="t" style="font-size:12px">Weekly email</text>
+    <text x="954" y="505" class="s">Ranked leads to the company</text>
+    <text x="954" y="519" class="s">lead-triage inbox.</text>
+
+    <!-- 4, 5, 6 -->
+    <path d="M876,286 C908,286 908,132 936,132" fill="none" stroke="#2E5E8C" stroke-width="2.5" marker-end="url(#ap)"/>
+    <circle cx="907" cy="200" r="10" fill="#2E5E8C"/><text x="907" y="204" text-anchor="middle" class="k w">4</text>
+    <path d="M876,346 C912,346 912,268 936,268" fill="none" stroke="#c0392b" stroke-width="2.5" marker-end="url(#ar)"/>
+    <circle cx="924" cy="320" r="10" fill="#c0392b"/><text x="924" y="324" text-anchor="middle" class="k w">5</text>
+    <line x1="1060" y1="324" x2="1060" y2="346" stroke="#c0392b" stroke-width="2.5" marker-end="url(#ar)"/>
+    <path d="M892,372 C918,372 914,490 936,490" fill="none" stroke="#7FA7CF" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#al)"/>
+  </svg>
+  </div>
+
+  <h2 style="break-before:page">Step by step: what data moves, and what is kept</h2>
+  <table>
+    <tr><th>Step</th><th>What moves</th><th>Personal data?</th><th>Kept where, for how long</th></tr>
+    <tr><td>1 · Export</td><td>The weekly RB2B CSV: one row per visitor, 23 fields. About 1 in 10 rows identifies a person (first and last name, title, work email, LinkedIn URL, city/state/zip, company, pages viewed with times). The rest are company-only visits.</td><td><span class="pill p-yes">Yes</span></td><td>The user's company device, as today.</td></tr>
+    <tr><td>2 · Upload</td><td>The same file, over HTTPS, after Google sign-in. Only named company.example users get through.</td><td><span class="pill p-yes">Yes</span></td><td>App memory only. Never written to disk, storage or a database. Deleted after 30 minutes without activity, or when the app restarts.</td></tr>
+    <tr><td>Scoring</td><td>Fixed rules check each visitor against Marketing's lists (accounts, own companies, competitors, pages, regions) and rank the leads. Runs inside the app.</td><td><span class="pill p-yes">Yes</span> in memory</td><td>Nothing saved.</td></tr>
+    <tr><td>3 · Gemini</td><td>Counts, job titles, company names, account tiers, countries, the website pages viewed (the page address only, without tracking codes), and the rule results.</td><td><span class="pill p-low">No direct identifiers</span></td><td>Not stored by the app. Vertex AI doesn't use the data to train models.</td></tr>
+    <tr><td>4 · Chat answer</td><td>The summary and the top leads per account, described by title and company.</td><td><span class="pill p-low">No direct identifiers</span></td><td>App memory, for that user only. Deleted after 30 minutes without activity.</td></tr>
+    <tr><td>5 · Workbook</td><td>A ranked Excel file: the leads worth acting on, account notes, and every identified visitor with the checks. Includes names, work emails and LinkedIn URLs.</td><td><span class="pill p-yes">Yes</span></td><td>App memory, for the user who ran the check only. It can be downloaded once and is deleted at that moment, or after 30 minutes without activity. Then the user's company device.</td></tr>
+    <tr><td>Logs</td><td>Requests and errors from the platform.</td><td><span class="pill p-no">None</span></td><td>The test project keeps no app logs, only build logs and admin audit logs. To check again in Marketing's projects.</td></tr>
+  </table>
+
+  <div class="grid" style="margin-top:14px">
+    <div class="panel info">
+      <h3>Access and location</h3>
+      <ul>
+        <li>About 10 named Marketing users. Google sign-in; no public access.</li>
+        <li>Each user sees only their own chats and workbooks.</li>
+        <li>The app runs as its own service account, allowed only to call Gemini and write logs.</li>
+        <li>Testing runs in a lab project in Iowa (<code>us-central1</code>), with made-up or approved files. Marketing's own projects (test, then production) will run in Montréal (<code>northamerica-northeast1</code>).</li>
+        <li>Changes only through code reviewed by Marketing's platform team.</li>
+        <li>Later, users reach it through the company Gemini Enterprise app.</li>
+      </ul>
+    </div>
+    <div class="panel later">
+      <h3>Later phases (to cover in the DEP)</h3>
+      <ul>
+        <li><b>Salesforce, read-only:</b> flag visitors who are already contacts, and companies already in active pursuit.</li>
+        <li><b>Weekly email</b> of the ranked leads to the lead-triage inbox.</li>
+        <li><b>RB2B direct connection</b> instead of a manual upload.</li>
+        <li><b>Pardot</b> (marketing-qualified leads), and more service lines.</li>
+        <li>Still no write-back to any system.</li>
+      </ul>
+    </div>
+    <div class="panel open">
+      <h3>To confirm with the Data &amp; Trust Office</h3>
+      <ul>
+        <li>Gemini uses Google's <code>global</code> endpoint. Is that OK, or do we need a Canadian one?</li>
+        <li>Can Marketing keep testing with real RB2B files while the DEP is in review?</li>
+        <li>Is a retention note needed for the downloaded workbook?</li>
+        <li>Does an existing assessment already cover RB2B itself?</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="src">MDL lead check · agreed approach (Marketing, 10-07) · current build, 11-04</div>
+</div>
+</body>
+</html>

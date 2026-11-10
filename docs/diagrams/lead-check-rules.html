@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Website-Visitor Lead Check — Agreed Approach</title>
+<style>
+  :root{
+    --purple:#1F3A5F; --purple2:#2E5E8C; --purple3:#7FA7CF;
+    --green:#5FB709; --greenbg:#eaf6d8; --greenln:#cfe7a8;
+    --teal:#128a7d; --tealbg:#dbf3ef; --tealln:#bfe6df;
+    --amber:#B06A00; --amberbg:#fbeede; --amberln:#eccfa6;
+    --blue:#1f6fb2; --bluebg:#e4eff9; --blueln:#c4ddf1;
+    --red:#c0392b; --redbg:#fbe6e3; --redln:#f0c9c2;
+    --ink:#2A2432; --muted:#6b6675; --line:#e2ddec; --card:#fff; --bg:#f4f1f8;
+    --s1:#f3eef9; --s2:#dccdee; --s3:#b9a0dc; --s4:#8a68bf; --s5:#5b3a8e;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);padding:20px;-webkit-font-smoothing:antialiased;}
+  .page{max-width:1180px;margin:0 auto 22px;background:var(--card);border-radius:14px;box-shadow:0 8px 30px rgba(75,40,109,.12);padding:22px 26px 20px;}
+  .brand{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--purple2);font-weight:700;}
+  h1{font-size:22px;margin:3px 0 2px;color:var(--purple);}
+  .cap{font-size:12.5px;color:var(--muted);margin:3px 0 12px;line-height:1.5;}
+  code{background:#f2f0f6;border-radius:4px;padding:1px 5px;font-size:10.5px;color:var(--purple);font-family:ui-monospace,SFMono-Regular,Menlo,monospace;}
+  h2{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--purple2);margin:22px 0 10px;}
+  h2 .n{display:inline-block;background:var(--purple);color:#fff;border-radius:20px;width:18px;height:18px;text-align:center;line-height:18px;font-size:10px;margin-right:6px;}
+  .ask{background:var(--bluebg);border:1px solid var(--blueln);border-radius:10px;padding:10px 13px;font-size:12px;line-height:1.5;margin-bottom:12px;}
+  .ask b{color:var(--blue);}
+  .agenda{display:flex;gap:6px;margin-bottom:4px;}
+  .agenda a{flex:1;text-decoration:none;color:inherit;border:1px solid var(--line);border-radius:9px;padding:7px 10px;font-size:11px;line-height:1.3;background:#faf9fc;}
+  .agenda a:hover{border-color:var(--purple3);}
+  .agenda b{display:block;color:var(--purple);font-size:11.5px;}
+  .agenda span{color:var(--muted);font-size:10px;}
+
+  /* 1 today */
+  .today{display:grid;grid-template-columns:1.35fr 1fr;gap:16px;align-items:start;}
+  .fields{display:flex;flex-wrap:wrap;gap:5px;}
+  .fc{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10.3px;border-radius:6px;padding:4px 7px;background:#f6f5f9;border:1px solid var(--line);color:#a49eae;cursor:default;}
+  .fc.used{background:var(--purple);border-color:var(--purple);color:#fff;font-weight:700;}
+  .flg{font-size:10px;color:var(--muted);margin-top:7px;display:flex;gap:14px;}
+  .flg i{display:inline-block;width:11px;height:11px;border-radius:3px;vertical-align:-1px;margin-right:5px;}
+  .big2{display:flex;gap:12px;align-items:center;margin-bottom:10px;}
+  .big2 .n{font-size:40px;font-weight:800;color:var(--purple);line-height:1;}
+  .big2 .t{font-size:12.5px;line-height:1.4;}
+  .notused{background:var(--amberbg);border:1px solid var(--amberln);border-radius:10px;padding:10px 13px;font-size:11.5px;line-height:1.5;}
+  .notused h3{margin:0 0 5px;font-size:10.3px;text-transform:uppercase;letter-spacing:.07em;color:var(--amber);}
+  .notused ul{margin:0;padding-left:17px;} .notused li{margin:2px 0;}
+  .rule1{margin-top:10px;background:#f6f5f9;border-radius:9px;padding:8px 12px;font-size:11.3px;line-height:1.45;}
+
+  /* 2 checks */
+  .flow{display:flex;gap:6px;align-items:stretch;}
+  .ck{flex:1;border:1px solid var(--line);border-radius:11px;padding:10px 11px;background:#fff;display:flex;flex-direction:column;gap:6px;}
+  .ck .h{display:flex;align-items:baseline;gap:6px;}
+  .ck .k{font-size:9.5px;font-weight:800;color:#fff;background:var(--purple);border-radius:20px;padding:1px 7px;}
+  .ck .q{font-size:13px;font-weight:800;color:var(--purple);}
+  .ck .rl{font-size:11px;line-height:1.42;flex:1;}
+  .ck .fx{display:flex;flex-wrap:wrap;gap:3px;}
+  .ck .fx span{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9.3px;background:#f3eef9;color:var(--purple);border-radius:4px;padding:1px 5px;}
+  .arr{display:flex;align-items:center;color:var(--purple3);font-weight:800;font-size:16px;flex:none;}
+  .how{font-size:9.6px;font-weight:800;border-radius:20px;padding:3px 8px;align-self:flex-start;}
+  .how.det{background:#eceaf0;color:var(--ink);}
+  .how.ai{background:var(--tealbg);color:var(--teal);border:1px solid var(--tealln);}
+  .res{flex:1.05;border-radius:11px;padding:10px 11px;background:linear-gradient(135deg,#1F3A5F,#2E5E8C);color:#fff;font-size:10.8px;line-height:1.4;display:flex;flex-direction:column;gap:7px;}
+  .res .q{font-size:13px;font-weight:800;}
+  .res .o{border-radius:8px;padding:6px 8px;background:rgba(255,255,255,.12);}
+  .res .o b{display:block;font-size:11.3px;}
+  .res .o.y{background:#fff;color:var(--ink);} .res .o.y b{color:#3c6b00;}
+  .keep{margin-top:9px;font-size:10.8px;color:var(--muted);line-height:1.45;}
+
+  /* 3 ranking */
+  .rank{display:grid;grid-template-columns:1fr 1.15fr 1.15fr;gap:14px;align-items:start;}
+  .card{border:1px solid var(--line);border-radius:11px;padding:10px 13px;background:#faf9fc;font-size:11.2px;line-height:1.45;}
+  .card h3{margin:0 0 7px;font-size:10.3px;text-transform:uppercase;letter-spacing:.07em;color:var(--purple2);}
+  .grp{display:flex;flex-direction:column;gap:4px;}
+  .grp div{border-radius:7px;padding:6px 9px;font-size:11px;font-weight:700;color:#fff;}
+  .grp .g1{background:var(--s5);} .grp .g2{background:var(--s4);} .grp .g3{background:var(--s3);color:var(--ink);}
+  .grp small{display:block;font-weight:500;opacity:.85;font-size:9.8px;}
+  .pts{width:100%;border-collapse:collapse;font-size:10.8px;}
+  .pts td{padding:4px 2px;border-top:1px solid var(--line);vertical-align:middle;}
+  .pts tr:first-child td{border-top:none;}
+  .pts td.b{width:42%;} .pts td.v{width:34px;text-align:right;font-weight:800;}
+  .bar{height:10px;} .bar i{display:block;height:10px;background:var(--purple2);border-radius:0 4px 4px 0;}
+  .split{display:flex;flex-direction:column;gap:7px;}
+  .sp{border-radius:9px;padding:8px 11px;font-size:10.9px;line-height:1.42;}
+  .sp .t{font-size:10px;font-weight:800;margin-bottom:3px;}
+  .sp.det{background:#f2f0f6;border:1px solid var(--line);} .sp.det .t{color:var(--ink);}
+  .sp.ai{background:var(--tealbg);border:1px solid var(--tealln);} .sp.ai .t{color:var(--teal);}
+  .sp ul{margin:0;padding-left:16px;}
+
+  /* 4 chat */
+  .chatwrap{display:grid;grid-template-columns:1fr 2.1fr;gap:16px;align-items:start;}
+  .steps{display:flex;flex-direction:column;gap:6px;}
+  .stp{display:flex;gap:8px;align-items:flex-start;font-size:11.2px;line-height:1.4;border:1px solid var(--line);border-radius:9px;padding:7px 10px;background:#fff;}
+  .stp .k{flex:none;width:20px;height:20px;border-radius:50%;background:var(--purple);color:#fff;font-weight:800;font-size:10px;display:flex;align-items:center;justify-content:center;}
+  .chat{border:1px solid var(--line);border-radius:12px;background:#f8f7fb;padding:12px;display:flex;flex-direction:column;gap:9px;}
+  .chat .lbl{font-size:9.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;font-weight:700;}
+  .u{align-self:flex-end;max-width:70%;background:var(--purple);color:#fff;border-radius:12px 12px 3px 12px;padding:8px 11px;font-size:11.2px;line-height:1.4;}
+  .u .file{display:inline-block;background:rgba(255,255,255,.16);border-radius:6px;padding:2px 7px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:10px;margin-bottom:4px;}
+  .a{align-self:flex-start;width:100%;background:#fff;border:1px solid var(--line);border-radius:12px 12px 12px 3px;padding:10px 13px;font-size:11.2px;line-height:1.45;}
+  .a .meta{font-size:10px;color:var(--muted);}
+  .a .sum{font-size:13px;font-weight:800;color:var(--purple);margin:3px 0 7px;}
+  .a .sec{font-size:9.6px;text-transform:uppercase;letter-spacing:.07em;font-weight:800;color:var(--purple2);margin:8px 0 4px;}
+  .lead{display:grid;grid-template-columns:96px 1fr;gap:4px 10px;padding:5px 0;border-top:1px solid var(--line);}
+  .lead:first-of-type{border-top:none;}
+  .lead .acct{font-weight:800;}
+  .tagy{display:inline-block;font-size:9.3px;font-weight:800;border-radius:20px;padding:1px 7px;background:var(--greenbg);color:#3c6b00;margin-top:2px;}
+  .tagn{display:inline-block;font-size:9.3px;font-weight:800;border-radius:20px;padding:1px 7px;background:var(--bluebg);color:var(--blue);margin-top:2px;}
+  .lead .why{color:var(--muted);font-size:10.6px;}
+  .lead .nx{font-size:10.6px;} .lead .nx b{color:var(--purple);}
+  .quiet{color:var(--muted);font-size:10.6px;padding:4px 0;}
+  .left{margin-top:8px;padding-top:7px;border-top:1px dashed var(--line);font-size:10.4px;color:var(--muted);display:flex;justify-content:space-between;align-items:center;gap:10px;}
+  .dl{flex:none;background:var(--purple);color:#fff;border-radius:20px;padding:3px 10px;font-size:10px;font-weight:700;}
+  .follow{display:flex;gap:6px;flex-wrap:wrap;}
+  .follow span{font-size:10.3px;border:1px solid var(--purple3);color:var(--purple);border-radius:20px;padding:2px 9px;background:#fff;}
+  .illus{font-size:9.8px;color:var(--muted);font-style:italic;}
+
+  /* 5 confirm */
+  .conf{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;}
+  .cf{border:1px solid var(--line);border-radius:11px;padding:10px 12px;background:#fff;font-size:11.2px;line-height:1.45;display:flex;flex-direction:column;gap:7px;}
+  .cf .t{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;font-weight:800;color:var(--purple);}
+  .cf .q{flex:1;}
+  .tg{display:flex;gap:5px;}
+  .tg button{flex:1;font:inherit;font-size:10.5px;font-weight:700;border-radius:20px;padding:4px 0;cursor:pointer;border:1px solid var(--line);background:#faf9fc;color:var(--muted);}
+  .tg button.ok.on{background:var(--greenbg);border-color:var(--green);color:#3c6b00;}
+  .tg button.ch.on{background:var(--amberbg);border-color:var(--amber);color:var(--amber);}
+  .cf.ok{border-color:var(--green);} .cf.ch{border-color:var(--amber);}
+  .readback{margin-top:12px;background:linear-gradient(135deg,#1F3A5F,#2E5E8C);color:#fff;border-radius:11px;padding:11px 15px;font-size:12px;line-height:1.5;}
+  .readback b{color:#d9c7f0;font-size:10px;text-transform:uppercase;letter-spacing:.07em;display:block;margin-bottom:2px;}
+  .pts tr.hint{cursor:help;} .pts tr.hint:hover td{background:#f3eef9;}
+  .pts .i{color:var(--purple3);font-size:10px;}
+  .ptnote{margin-top:7px;font-size:10.3px;color:var(--muted);line-height:1.45;}
+  .ptnote b{color:var(--ink);}
+  #tip.wide{max-width:320px;}
+  .order{display:flex;align-items:stretch;gap:0;margin:4px 0 6px;}
+  .ostep{flex:1;min-height:92px;border-radius:12px;padding:12px 8px;border:1px solid var(--line);background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;text-align:center;position:relative;}
+  .ostep .num{width:24px;height:24px;border-radius:50%;background:var(--purple);color:#fff;font-weight:800;font-size:11.5px;display:flex;align-items:center;justify-content:center;}
+  .ostep .t{font-size:12px;font-weight:800;color:var(--purple);line-height:1.2;}
+  .ostep .bd{display:flex;flex-direction:column;align-items:center;gap:4px;}
+  .ostep .how{margin:0;align-self:center;text-align:center;}
+  .ostep.end{background:var(--amberbg);border-color:var(--amberln);} .ostep.end .t{color:var(--amber);}
+  .ostep.out{background:var(--greenbg);border-color:var(--greenln);} .ostep.out .t{color:#3c6b00;}
+  .ostep.ai{background:var(--tealbg);border-color:var(--tealln);} .ostep.ai .num{background:var(--teal);} .ostep.ai .t{color:var(--teal);}
+  .ostep .ic{font-size:20px;line-height:1;}
+  .ostep:not(.end):not(.out){justify-content:flex-start;padding-top:14px;}
+  .oarr{display:flex;align-items:center;justify-content:center;width:22px;flex:none;color:var(--purple3);font-weight:800;font-size:18px;}
+  .ck .fx span.add,.add{background:var(--greenbg);color:#3c6b00;border:1px dashed var(--green);cursor:help;}
+  .dets{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:9px;}
+  .dt{border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:10.6px;line-height:1.42;background:#faf9fc;}
+  .dt .t{font-size:10.3px;font-weight:800;color:var(--purple);margin-bottom:3px;}
+  .tagw{display:inline-block;font-size:9px;font-weight:700;border-radius:20px;padding:0 6px;background:var(--amberbg);color:var(--amber);border:1px solid var(--amberln);vertical-align:1px;}
+  .scope .sq{font-size:13px;line-height:1.45;color:var(--purple);background:#f3eef9;border-left:4px solid var(--purple);border-radius:0 9px 9px 0;padding:9px 13px;margin-bottom:10px;}
+  .scope .sq span{color:var(--muted);font-size:11px;}
+  .sgrid{display:grid;grid-template-columns:1.7fr 1fr;gap:14px;align-items:start;}
+  table.sl{width:100%;border-collapse:collapse;font-size:10.8px;}
+  .sl th{background:var(--purple);color:#fff;font-size:9px;text-transform:uppercase;letter-spacing:.04em;padding:5px 7px;text-align:left;}
+  .sl td{border-bottom:1px solid var(--line);padding:6px 7px;vertical-align:top;line-height:1.3;}
+  .sl td small{display:block;color:var(--muted);font-size:9.5px;}
+  .sl td.q{color:#b0aabb;font-weight:800;text-align:center;}
+  .sl tr.ready td{background:var(--greenbg);}
+  .snote{margin-top:6px;font-size:10.4px;color:var(--muted);line-height:1.4;}
+  .sside{display:flex;flex-direction:column;gap:7px;}
+  .sc{border:1px solid var(--line);border-radius:9px;padding:8px 11px;font-size:10.8px;line-height:1.42;background:#fff;}
+  .sc .t{font-size:10px;text-transform:uppercase;letter-spacing:.06em;font-weight:800;color:var(--purple2);margin-bottom:3px;}
+  .sc ol{margin:0;padding-left:17px;}
+  .sc.ask2{background:var(--bluebg);border-color:var(--blueln);} .sc.ask2 .t{color:var(--blue);}
+  .sug{margin-top:6px;padding-top:6px;border-top:1px dashed var(--blueln);}
+  .ask.ok{background:var(--greenbg);border-color:var(--greenln);} .ask.ok b{color:#3c6b00;}
+  .dets{grid-template-columns:repeat(3,1fr)!important;}
+  .pg{font-size:10.4px;color:var(--muted);margin-top:1px;} .pg a{color:var(--blue);text-decoration:underline;margin-right:6px;cursor:pointer;}
+  .tagl{display:inline-block;font-size:9.3px;font-weight:800;border-radius:20px;padding:1px 7px;background:#f3eef9;color:var(--purple);margin:2px 0 0 4px;}
+  .dls{display:flex;gap:6px;flex:none;} .dl.em{background:var(--teal);}
+  .sl td.nl{background:#faf9fc;color:var(--ink);font-size:10.6px;vertical-align:middle;}
+  .dec{display:grid;grid-template-columns:1.1fr 1fr 1fr;gap:10px;}
+  .dc{border-radius:11px;padding:10px 13px;font-size:11.1px;line-height:1.45;}
+  .dc .t{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;font-weight:800;margin-bottom:5px;}
+  .dc ul{margin:0;padding-left:16px;} .dc li{margin:3px 0;}
+  .dc.ag{background:var(--greenbg);border:1px solid var(--greenln);} .dc.ag .t{color:#3c6b00;}
+  .dc.nx2{background:#f3eef9;border:1px solid #dcc9ee;} .dc.nx2 .t{color:var(--purple);}
+  .dc.op{background:var(--amberbg);border:1px solid var(--amberln);} .dc.op .t{color:var(--amber);}
+  #tip{position:fixed;pointer-events:none;background:#2A2432;color:#fff;font-size:10.5px;line-height:1.35;padding:6px 9px;border-radius:6px;box-shadow:0 4px 14px rgba(0,0,0,.2);opacity:0;transition:opacity .08s;max-width:240px;z-index:10;}
+  .src{margin-top:14px;font-size:9.5px;color:#9791a3;text-align:right;}
+  @media print{body{background:#fff;padding:0;} .page{box-shadow:none;border-radius:0;max-width:none;} @page{size:landscape;margin:9mm;} #tip{display:none;}}
+</style>
+</head>
+<body><div style="font:12px/1.4 system-ui,sans-serif;background:#fff8e1;border:1px solid #f0d58a;color:#5c4400;padding:6px 10px;margin:0 0 10px;border-radius:6px">Anonymized portfolio version: people, company, project IDs and client accounts are replaced with roles or fictional names. The legacy weekly-report comparison tool shown here is not included in this repo.</div>
+<div class="page">
+  <div class="brand">the company · Marketing AI · agreed approach · Marketing sync 2026-10-07</div>
+  <h1>Website-Visitor Lead Check — Agreed Approach</h1>
+  <div class="cap">How we'd turn the raw RB2B website-visitor file into a short answer for each account: <b>which visitors are worth acting on, why, and what to do next</b>. Agreed with Marketing on 2026-10-07; the basis for Friday's first version.</div>
+
+  <div class="ask ok"><b>✓ Approved on 10-07.</b> The point weights are a starting point and will be calibrated. Section 6 lists what was agreed, what comes next, and what's still open.</div>
+
+  <div class="agenda">
+    <a href="#s1"><b>1 · Today's tier</b><span>what it uses</span></a>
+    <a href="#s2"><b>2 · Four checks</b><span>who · which · what · rule out</span></a>
+    <a href="#s3"><b>3 · Order &amp; ranking</b><span>and rules vs AI</span></a>
+    <a href="#s4"><b>4 · What you get</b><span>example answer</span></a>
+    <a href="#s5"><b>5 · Other service lines</b><span>what each needs</span></a>
+    <a href="#s6"><b>6 · Agreed &amp; next</b><span>decisions · next phase</span></a>
+  </div>
+
+  <h2 id="s1"><span class="n">1</span>Today: the tier uses 2 of the 23 fields</h2>
+  <div class="today">
+    <div>
+      <div class="big2"><div class="n">2 / 23</div><div class="t">the legacy weekly report sets the tier from the <b>job title</b> and the <b>pages viewed</b>. The tier is the job-title grade; pages only decide Tier 1 vs Tier 2 for top titles.</div></div>
+      <div class="fields">
+        <span class="fc used" data-tip="Sets the tier">Title</span><span class="fc used" data-tip="Only decides Tier 1 vs Tier 2 for top titles">RecentPageUrls</span>
+        <span class="fc">CompanyName</span><span class="fc">Website</span><span class="fc">Industry</span><span class="fc">EstimatedEmployeeCount</span><span class="fc">EstimateRevenue</span>
+        <span class="fc">FirstName</span><span class="fc">LastName</span><span class="fc">WorkEmail</span><span class="fc">LinkedInUrl</span>
+        <span class="fc">AllTimePageViews</span><span class="fc">RecentPageCount</span><span class="fc">MostRecentReferrer</span><span class="fc">FirstSeenAt</span><span class="fc">LastSeenAt</span><span class="fc">NewProfile</span>
+        <span class="fc">Tags</span><span class="fc">FilterMatches</span><span class="fc">ProfileType</span><span class="fc">City</span><span class="fc">State</span><span class="fc">Zipcode</span>
+      </div>
+      <div class="flg"><span><i style="background:var(--purple)"></i>sets the tier today</span><span><i style="background:#f6f5f9;border:1px solid var(--line)"></i>doesn't change the tier (some are shown in the report)</span></div>
+    </div>
+    <div>
+      <div class="notused"><h3>Not counted in today's tier</h3><ul>
+        <li><b>Which company</b>: it decides who receives the row, not how good the lead is</li>
+        <li><b>Company size and revenue</b></li>
+        <li><b>Repeat visits</b> and how many pages they read</li>
+        <li>The <b>90% of visits</b> where RB2B knows only the company, not the person</li>
+      </ul></div>
+      <div class="rule1">So good leads can land in the wrong tier. For example, a visitor with an ordinary title who went to <b>Contact Us</b> stays in Tier 4.</div>
+    </div>
+  </div>
+
+  <h2 id="s2"><span class="n">2</span>Four checks on every visitor</h2>
+  <div class="flow">
+    <div class="ck"><div class="h"><span class="k">1</span><span class="q">WHO</span></div>
+      <div class="rl"><b>Strong role</b> = builds or leads AI/ML/data work, or buys it (procurement, vendor management). Seniority alone isn't enough.</div>
+      <div class="fx"><span>Title</span><span>LinkedInUrl</span></div>
+      <span class="how det" data-tip="Fixed title rules decide clear cases">⚙️ Fixed rules</span>
+      <span class="how ai" data-tip="e.g. is a 'Research Scientist' in ML or in pharma?">✨ AI for unclear titles only</span></div>
+    <div class="arr">→</div>
+    <div class="ck"><div class="h"><span class="k">2</span><span class="q">WHICH</span></div>
+      <div class="rl"><b>Tier 1:</b> whale accounts + other high-priority <b>existing accounts</b>. <b>Tier 2:</b> target accounts + <b>new logos</b> (above $50M revenue). Visits with no person identified still count, as an <b>account signal</b>.</div>
+      <div class="fx"><span>CompanyName</span><span>Website</span><span>EstimateRevenue</span></div>
+      <span class="how det">⚙️ Fixed rules</span></div>
+    <div class="arr">→</div>
+    <div class="ck"><div class="h"><span class="k">3</span><span class="q">WHAT</span></div>
+      <div class="rl"><b>Strong interest</b> = Contact Us, or a <b>solution page</b> (AI Data Solutions today). Repeat visits count for more. <b>Recent visits</b> only (default 2 weeks). Counts for <b>every role</b>.</div>
+      <div class="fx"><span>RecentPageUrls</span><span>AllTimePageViews</span><span class="add" data-tip="Not in your field picks, but needed: the visit dates are how we know recent and repeat visits">FirstSeenAt +</span><span class="add" data-tip="Not in your field picks, but needed: the visit dates are how we know recent and repeat visits">LastSeenAt +</span></div>
+      <span class="how det">⚙️ Fixed rules</span></div>
+    <div class="arr">→</div>
+    <div class="ck"><div class="h"><span class="k">4</span><span class="q">RULE OUT</span></div>
+      <div class="rl">Our own staff. Visitors <b>outside the focus regions</b>. Students, job seekers, competitors. Wrong company matches from personal emails.</div>
+      <div class="fx"><span>WorkEmail</span><span>CompanyName</span><span>Title</span><span class="add" data-tip="Not in your field picks, but needed: RB2B has no country column, so the region comes from city and state">City +</span><span class="add" data-tip="Not in your field picks, but needed: RB2B has no country column, so the region comes from city and state">State +</span></div>
+      <span class="how det">⚙️ Fixed rules</span></div>
+    <div class="arr">→</div>
+    <div class="res"><div class="q">Result</div>
+      <div class="o y"><b>YES</b>strong role + strong interest + not ruled out</div>
+      <div class="o"><b>ACCOUNT NOTE</b>a Tier 1 or Tier 2 account reading solution pages, no person identified</div>
+      <div class="o"><b>NO</b>everything else: kept in the data, not shown</div></div>
+  </div>
+  <div class="dets">
+    <div class="dt"><div class="t">🎯 What counts as intent</div>The <b>solution pages</b> someone clicked, not a homepage drive-by. An AI-lab program manager reading robotics pages counts; a CEO who lands and leaves doesn't. RB2B has <b>no time-on-page or scroll data</b>, so which pages and how many are the measure.</div>
+    <div class="dt"><div class="t">🌍 Focus regions</div>US, Canada, <b>UKI</b>, Western Europe, SE Asia, Japan, Korea, China. <b>Ireland is key:</b> many tech clients have their HQ there. The region comes from city and state; outside the US, RB2B mostly sees companies, so those visits become <b>account notes</b>.</div>
+    <div class="dt"><div class="t">📅 Visit window</div>Repeat and recent visits are counted over a <b>recent window</b>: 2 weeks to start, adjustable to 10 days or 1 week once we see results.</div>
+    <div class="dt"><div class="t">✉️ Personal emails</div>Not a reason to drop a lead. The lead is kept and marked <b>"find work email"</b> (Apollo / ZoomInfo). Ruled out only when the personal email caused a <b>wrong company match</b> (e.g. live.com → Microsoft).</div>
+    <div class="dt"><div class="t">🏷️ RB2B scores and tags</div><b>Not used.</b> RB2B's own scoring and "Hot lead" tags aren't trusted (64% of identified people carry "Hot lead"). to confirm with the analyst.</div>
+    <div class="dt"><div class="t">➕ Extra fields</div>Fields marked <b>+</b> weren't in Marketing's picks but are needed: visit dates for recent and repeat visits, city and state for regions.</div>
+  </div>
+  <div class="keep">Built on the legacy report: its target-account list and company matching (careers and subsidiary domains), his title rules as a starting point, and his principle that a week with zero leads is a valid result.</div>
+
+  <h2 id="s3"><span class="n">3</span>The order of steps, ranking, and what uses AI</h2>
+  <div class="rank">
+    <div class="card"><h3>First by account tier</h3>
+      <div class="grp">
+        <div class="g1">Tier 1 · Whale &amp; priority existing accounts<small>Globex · Initech · Umbrella · Tyrell · Hooli · Soylent, plus other high-priority existing accounts</small></div>
+        <div class="g2">Tier 2 · Target accounts &amp; new logos<small>the AI Data Solutions target list, plus non-target companies above $50M revenue</small></div>
+      </div>
+      <div style="margin-top:8px;font-size:10.6px;color:var(--muted);">Inside each tier, every account shows its <b>top N people</b> by points: 3 to start, adjustable to 5, 10 or 20. A tie goes to the most recent visit. Covers <b>50–60+ accounts</b>, not only the whales.</div></div>
+    <div class="card"><h3>Then by points, within an account <span style="text-transform:none;letter-spacing:0;color:var(--amber);font-weight:700;">· starting weights, to calibrate</span></h3>
+      <table class="pts">
+        <tr class="hint" data-tip="<b>Interest · RB2B field: RecentPageUrls</b><br>The visitor opened example.com/contact or /contact-us.<br>Contact-center <i>service</i> pages (/solutions/contact-center…) do <b>not</b> count: those are about our CX offering, not a request to talk.<br>Counted once, however many times they opened it."><td class="b">Contact Us page <span class="i">ⓘ</span></td><td><div class="bar"><i style="width:100%"></i></div></td><td class="v">+3</td></tr>
+        <tr class="hint" data-tip="<b>Interest · RB2B field: RecentPageUrls</b><br>A page describing what we sell in AI Data Solutions, e.g. data for AI training, physical AI / robotics data, generative AI, an internal GenAI product.<br>The exact page list is to confirm with you.<br>Counted once; adds on top of Contact Us."><td class="b">AI Data Solutions service page <span class="i">ⓘ</span></td><td><div class="bar"><i style="width:66.7%"></i></div></td><td class="v">+2</td></tr>
+        <tr class="hint" data-tip="<b>Role · RB2B field: Title</b><br>Heads, directors, VPs and chiefs of AI, ML, data or research, plus procurement and vendor managers.<br>Clear titles are graded by fixed rules; unclear ones (e.g. &quot;Research Scientist&quot;: ML or pharma?) are settled by AI.<br>Either this or Practitioner, not both."><td class="b">Leads or buys AI/data <span class="i">ⓘ</span></td><td><div class="bar"><i style="width:66.7%"></i></div></td><td class="v">+2</td></tr>
+        <tr class="hint" data-tip="<b>Interest · RB2B field: RecentPageUrls</b><br>Blog posts and insights about data and AI (/insights/data-and-ai…).<br>Shows interest, but weaker than a service page. Counted once; adds to the other page types."><td class="b">AI article or insight <span class="i">ⓘ</span></td><td><div class="bar"><i style="width:33.3%"></i></div></td><td class="v">+1</td></tr>
+        <tr class="hint" data-tip="<b>Role · RB2B field: Title</b><br>People who do the hands-on work: ML engineers, data scientists, AI researchers.<br>A strong role, but usually not the buyer, so 1 point instead of 2."><td class="b">AI/data practitioner <span class="i">ⓘ</span></td><td><div class="bar"><i style="width:33.3%"></i></div></td><td class="v">+1</td></tr>
+        <tr class="hint" data-tip="<b>Repeat · RB2B fields: FirstSeenAt, LastSeenAt</b><br>The same person came back on a different day: first and latest visit on different days, or seen again in a later upload.<br>Duplicate rows of the same visit don't count."><td class="b">2+ visits <span class="i">ⓘ</span></td><td><div class="bar"><i style="width:33.3%"></i></div></td><td class="v">+1</td></tr>
+        <tr class="hint" data-tip="<b>Recency · RB2B field: LastSeenAt</b><br>Latest visit is within 7 days of the newest visit in the file.<br>Measured against the file, not today's date, so an older file still ranks fairly."><td class="b">Seen in the last 7 days <span class="i">ⓘ</span></td><td><div class="bar"><i style="width:33.3%"></i></div></td><td class="v">+1</td></tr>
+      </table>
+      <div class="ptnote">
+        <div><b>Hover any row</b> for the RB2B field it uses and how it's assigned.</div>
+        <div>· Only <b>yeses</b> get points. Points rank leads; they never turn a no into a yes.</div>
+        <div>· Role counts once (2 <i>or</i> 1). Page types add up. <b>Maximum 10 points.</b></div>
+        <div>· Each lead's "why" lists its points, e.g. <i>Contact Us +3 · service page +2 · leads AI/data +2 = 7</i>. Same file in, same order out.</div>
+        <div>· <b>After the pilot:</b> set a score threshold from real results, e.g. "above 67/100, client success acts on ~80% of leads".</div>
+      </div></div>
+    <div class="split">
+      <div class="sp det"><div class="t">⚙️ Fixed rules (script) do the deciding</div><ul>
+        <li>Read the file and remove duplicates</li><li>Checks 1–4 and account notes</li><li>Ranking and the full-list download</li></ul>
+        <div style="margin-top:3px;color:var(--muted);font-size:10.3px;">Repeatable, and easy to check against the legacy report.</div></div>
+      <div class="sp ai"><div class="t">✨ AI does the judgement and the writing</div><ul>
+        <li>Settle unclear job titles</li><li>Write the <b>why</b> and the <b>next step</b></li><li>Answer follow-up questions in the chat</li></ul>
+        <div style="margin-top:3px;color:var(--muted);font-size:10.3px;">It sees only the short list, and never decides the ranking.</div></div>
+    </div>
+  </div>
+
+  <div class="rules" style="margin:14px 0 6px;font-size:10.5px;"><b style="color:var(--purple2);text-transform:uppercase;letter-spacing:.07em;font-size:10px;">Order of steps</b></div>
+  <div class="order" aria-label="Order of steps">
+    <div class="ostep end"><span class="ic">📄</span><div class="t">RB2B file</div></div>
+    <div class="oarr">›</div>
+    <div class="ostep"><span class="num">1</span><div class="t">Clean up</div><div class="bd"><span class="how det">⚙️ Fixed rules</span></div></div>
+    <div class="oarr">›</div>
+    <div class="ostep"><span class="num">2</span><div class="t">Four checks</div><div class="bd"><span class="how det">⚙️ Fixed rules</span><span class="how ai">✨ AI for unclear titles</span></div></div>
+    <div class="oarr">›</div>
+    <div class="ostep"><span class="num">3</span><div class="t">Rank the YESes</div><div class="bd"><span class="how det">⚙️ Fixed rules</span></div></div>
+    <div class="oarr">›</div>
+    <div class="ostep"><span class="num">4</span><div class="t">Top N people per account</div><div class="bd"><span class="how det">⚙️ Fixed rules</span></div></div>
+    <div class="oarr">›</div>
+    <div class="ostep ai"><span class="num">5</span><div class="t">Write why + next step</div><div class="bd"><span class="how ai">✨ Uses AI</span></div></div>
+    <div class="oarr">›</div>
+    <div class="ostep out"><span class="ic">💬</span><div class="t">Answer + weekly email</div></div>
+  </div>
+
+  <h2 id="s4"><span class="n">4</span>What you get: a short answer in the chat, and a weekly email</h2>
+  <div class="chatwrap">
+    <div class="steps">
+      <div class="stp"><span class="k">1</span><div><b>Upload the raw RB2B file</b> in the chat, any time: weekly, daily, or any date range. <span style="color:var(--muted)">Later: connect to RB2B directly instead.</span></div></div>
+      <div class="stp"><span class="k">2</span><div>Get a <b>short answer by account tier</b>: each tier lists its accounts, and each account its top leads, with <b>clickable page links</b>, a why and a next step.</div></div>
+      <div class="stp"><span class="k">3</span><div><b>Ask follow-ups</b> or download the full list.</div></div>
+      <div class="stp"><span class="k">4</span><div><b>Weekly email</b> of the report to <b>one inbox, the lead triage team</b>, who route each lead to the right client-success owner.</div></div>
+      <div class="illus">One or two good leads a week for an account like Initech is enough. A quiet week can simply say "nothing worth acting on this week".</div>
+    </div>
+    <div class="chat">
+      <div class="lbl">Example · illustrative, not real data</div>
+      <div class="u"><span class="file">📎 rb2b_export_2026-10-05.csv</span><br>What's worth acting on in this file?</div>
+      <div class="a">
+        <div class="meta">10,998 visits · 1,097 people identified · 10,570 companies</div>
+        <div class="sum">3 leads worth acting on · 1 account note</div>
+
+        <div class="sec">Tier 1 · Whale &amp; priority existing accounts</div>
+        <div class="lead"><div><div class="acct">Globex</div><span class="tagy">YES</span></div>
+          <div><b>Director, ML Data Platform</b><div class="why">Why: AI data role · Contact Us + "Data for AI training" · 2 visits this week · seen yesterday (9 pts)</div><div class="pg">Pages: <a>/contact ↗</a> <a>/solutions/ai-data ↗</a></div><div class="nx"><b>Next:</b> client-success owner reaches out; check for an open opportunity first</div></div></div>
+        <div class="lead"><div><div class="acct">Google</div><span class="tagn">ACCOUNT NOTE</span></div>
+          <div><b>5 visits to AI Data pages</b>, no person identified<div class="why">Physical AI, data annotation</div><div class="pg">Pages: <a>/solutions/physical-ai ↗</a> <a>/solutions/data-annotation ↗</a></div><div class="nx"><b>Next:</b> raise with the account team at the next touchpoint</div></div></div>
+        <div class="quiet">Umbrella · Tyrell · Hooli · Soylent: nothing this week</div>
+
+        <div class="sec">Tier 2 · Target accounts &amp; new logos</div>
+        <div class="lead"><div><div class="acct">Cyberdyne</div><span class="tagy">YES</span></div>
+          <div><b>Head of Data Procurement</b> <span class="tagw">personal email</span><div class="why">Why: buyer role · Contact Us (5 pts)</div><div class="pg">Pages: <a>/contact ↗</a></div><div class="nx"><b>Next:</b> find work email (Apollo / ZoomInfo), then SDR to qualify</div></div></div>
+        <div class="lead"><div><div class="acct">Large US insurer</div><span class="tagy">YES</span><span class="tagl">new logo</span></div>
+          <div><b>VP Data &amp; AI</b><div class="why">Why: AI/data leader · 3 AI Data pages over 2 visits (5 pts)</div><div class="pg">Pages: <a>/solutions/physical-ai ↗</a> <a>/insights/data-and-ai/… ↗</a></div><div class="nx"><b>Next:</b> SDR to qualify</div></div></div>
+
+        <div class="left"><span>Left out: 1,082 people (no strong role or no strong interest) · 12 ruled out (our own staff, outside focus regions, wrong company matches)</span><span class="dls"><span class="dl">⬇ Full list (CSV)</span><span class="dl em">✉ Email to lead-triage inbox</span></span></div>
+      </div>
+      <div class="follow"><span>Why isn't anyone from Soylent here?</span><span>Show everyone from Initech</span><span>Only Contact Us visitors</span></div>
+    </div>
+  </div>
+
+  <h2 id="s5"><span class="n">5</span>Other service lines: what each needs</h2>
+  <div class="scope">
+    <div class="sq">"Let's scale this to <b>Digital Solutions and CX</b>." Scope: <b>at least 50–60 accounts, maybe more</b>, across service lines, target verticals and countries. <span>— Marketing, 10-07</span></div>
+    <div class="sgrid">
+      <div>
+        <table class="sl">
+          <tr><th>Service line</th><th>Which companies count</th><th>Strong roles</th><th>Interest pages</th></tr>
+          <tr class="ready"><td><b>AI Data Solutions</b><small>first · Friday's first version</small></td><td>✓ target list (64 accounts), <b>changes almost daily</b>, so it must be easy to update · + existing accounts · + new logos</td><td>✓ AI/ML/data, procurement</td><td>✓ AI Data pages</td></tr>
+          <tr><td><b>Digital Solutions</b><small>next</small></td><td rowspan="3" class="nl"><b>No target-account lists exist.</b> Instead: <b>existing account</b> or <b>new logo</b>, and a new logo must <b>fit the ICP</b> for that service line.</td><td rowspan="3" class="nl">from Marketing's <b>buyer personas</b></td><td rowspan="3" class="nl">a <b>product-marketing sheet</b>, or a list <b>Gemini builds and refreshes weekly</b>, reviewed once by Marketing</td></tr>
+          <tr><td><b>CX</b><small>next · contact-center pages already show up in the data</small></td></tr>
+          <tr><td><b>Trust &amp; Safety · BPO · an internal GenAI product</b><small>later</small></td></tr>
+        </table>
+        <div class="snote">Same four checks for every service line. Only the definitions change: which companies, which roles, which pages.</div>
+      </div>
+      <div class="sside">
+        <div class="sc"><div class="t">From Marketing</div><b>ICPs, service-line definitions and buyer personas</b> for every service line. Optionally, a high-interest page list built with product marketing.</div>
+        <div class="sc"><div class="t">Why let Gemini keep the page lists</div>New pages (e.g. case studies) are added every week. A list that Gemini refreshes weekly means nobody has to remember to update a sheet; Marketing reviews it once.</div>
+        <div class="sc"><div class="t">Later: Salesforce</div>Find new logos <b>already in active pursuit</b> (an open opportunity), and flag visitors who are <b>already contacts</b>.</div>
+      </div>
+    </div>
+  </div>
+
+  <h2 id="s6"><span class="n">6</span>Agreed on 10-07, and what comes next</h2>
+  <div class="dec">
+    <div class="dc ag"><div class="t">✓ Agreed</div><ul>
+      <li>The <b>four checks</b>, the order of steps and rules-first scoring</li>
+      <li><b>Two account tiers</b>; top N people per account, grouped by tier; <b>50–60+ accounts</b></li>
+      <li>Each lead: <b>clickable page links</b>, a why and a next step</li>
+      <li><b>Account notes</b> from company-level visits</li>
+      <li><b>Weekly email</b> to the lead-triage inbox, plus the chat</li>
+      <li><b>AI Data Solutions first</b>, then Digital Solutions and CX</li>
+    </ul></div>
+    <div class="dc nx2"><div class="t">→ Next phase</div><ul>
+      <li><b>Salesforce check:</b> suppress or flag visitors who are already contacts (e.g. a renewal or churn signal)</li>
+      <li><b>Connect to RB2B</b> directly instead of uploading a file</li>
+      <li><b>Score threshold</b> set from real pilot results</li>
+      <li><b>Gemini-maintained</b> page and role lists per service line</li>
+    </ul></div>
+    <div class="dc op"><div class="t">? Still open</div><ul>
+      <li>The list of <b>high-priority existing accounts</b> for Tier 1</li>
+      <li>ICPs and buyer personas per service line (Marketing)</li>
+      <li>The <b>lead-triage inbox</b> address</li>
+      <li>Is the RB2B download raw or filtered, and can it cover all visitors? (analyst)</li>
+      <li>How RB2B's "Hot lead" tags are set (analyst)</li>
+      <li>Client-success volunteers to talk to</li>
+    </ul></div>
+  </div>
+  <div class="readback"><b>For Friday · first version</b>AI Data Solutions only: reproduce the legacy report, then add the four checks, the two-tier ranking and clickable page links. Compare it with the legacy report for the same week, then build on it week by week.</div>
+
+  <div class="src">Field counts from the RB2B export received 2026-09-29 (10,998 rows) and the legacy scoring script (shared 2026-10-05) · example answer is illustrative · point values are starting weights, to be calibrated</div>
+</div>
+<div id="tip" role="tooltip"></div>
+<script>
+  const tip=document.getElementById('tip');
+  document.querySelectorAll('[data-tip]').forEach(el=>{
+    el.addEventListener('mousemove',e=>{tip.innerHTML=el.dataset.tip;tip.style.opacity=1;tip.classList.toggle('wide',el.classList.contains('hint'));
+      const x=Math.min(e.clientX+14,window.innerWidth-(el.classList.contains('hint')?330:250));tip.style.left=x+'px';tip.style.top=(e.clientY+14)+'px';});
+    el.addEventListener('mouseleave',()=>{tip.style.opacity=0;});
+  });
+  document.querySelectorAll('.cf').forEach(cf=>{
+    const [ok,ch]=cf.querySelectorAll('.tg button');
+    const set=s=>{ok.classList.toggle('on',s==='ok');ch.classList.toggle('on',s==='ch');cf.classList.toggle('ok',s==='ok');cf.classList.toggle('ch',s==='ch');};
+    ok.addEventListener('click',()=>set(ok.classList.contains('on')?'':'ok'));
+    ch.addEventListener('click',()=>set(ch.classList.contains('on')?'':'ch'));
+  });
+</script>
+</body>
+</html>

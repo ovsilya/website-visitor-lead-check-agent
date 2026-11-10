@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MDL App — Agent Internals</title>
+<style>
+  :root{
+    --purple:#1F3A5F; --purple2:#2E5E8C; --purple3:#7FA7CF;
+    --green:#5FB709; --greenbg:#eaf6d8;
+    --teal:#128a7d; --tealbg:#dbf3ef;
+    --amber:#B06A00; --amberbg:#fbeede;
+    --red:#c0392b; --redbg:#fbe6e3;
+    --blue:#1f6fb2; --bluebg:#e4eff9;
+    --ink:#2A2432; --muted:#6b6675; --line:#e2ddec; --card:#fff; --bg:#f4f1f8;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);padding:20px;-webkit-font-smoothing:antialiased;}
+  .page{max-width:1240px;margin:0 auto;background:var(--card);border-radius:14px;box-shadow:0 8px 30px rgba(75,40,109,.12);padding:22px 26px 20px;}
+  .brand{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--purple2);font-weight:700;}
+  h1{font-size:21px;margin:3px 0 2px;color:var(--purple);}
+  .cap{font-size:12px;color:var(--muted);margin:3px 0 4px;line-height:1.5;}
+  code{background:#f2f0f6;border-radius:4px;padding:1px 5px;font-size:10px;color:var(--purple);}
+  h2{font-size:11px;text-transform:uppercase;letter-spacing:.09em;color:var(--purple2);margin:22px 0 9px;}
+  .sub{font-size:10.5px;color:var(--muted);margin:-4px 0 8px;line-height:1.45;}
+
+  .hdr{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 6px;}
+  .hdr span{font-size:10px;background:#f6f3fa;border:1px solid var(--line);border-radius:20px;padding:2px 9px;color:var(--muted);}
+  .hdr b{color:var(--ink);}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:10px;color:var(--muted);border:1px solid var(--line);border-radius:10px;padding:7px 11px;background:#fcfbfd;}
+  .legend i{display:inline-block;vertical-align:-2px;margin-right:5px;}
+  .lg-line{width:22px;height:0;border-top:2px solid;}
+  .lg-box{width:14px;height:11px;border-radius:3px;border:1px solid;}
+
+  .scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:#fff;padding:8px;}
+  .scroll svg{display:block;width:100%;min-width:960px;height:auto;}
+  .sv text{font-family:inherit;}
+  .sv .t{font-size:11.5px;font-weight:700;fill:var(--ink);}
+  .sv .s{font-size:9.5px;fill:#4f4a58;}
+  .sv .m{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9px;fill:var(--purple);}
+  .sv .w{fill:#fff;} .sv .w2{fill:#e9def7;font-size:9.5px;} .sv .wm{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:9px;fill:#e2d4f4;}
+  .sv .band{font-size:9px;font-weight:800;letter-spacing:.08em;}
+  .sv .lb{font-size:9px;fill:var(--muted);} .sv .lbr{font-size:9px;fill:var(--red);}
+  .bx{fill:#fff;stroke:var(--line);} .bxp{fill:#efe7f7;stroke:#dcc9ee;} .bxc{fill:var(--purple);stroke:none;}
+  .bxr{fill:var(--redbg);stroke:#f0c9c3;} .bxt{fill:var(--tealbg);stroke:#bfe6df;} .bxg{fill:#f8f7fa;stroke:var(--line);}
+  .bxx{fill:#fff;stroke:var(--purple3);stroke-dasharray:5 3;}
+  .ln{stroke:var(--purple);stroke-width:1.6;fill:none;} .lp{stroke:var(--purple3);stroke-width:1.6;fill:none;}
+  .lr{stroke:var(--red);stroke-width:1.6;fill:none;} .lgy{stroke:#9791a3;stroke-width:1.4;fill:none;stroke-dasharray:5 4;}
+
+  /* runner steps */
+  .steps{display:grid;grid-template-columns:repeat(7,1fr);gap:16px;}
+  .st{position:relative;border:1px solid var(--line);border-radius:9px;padding:8px 9px;font-size:10px;line-height:1.42;background:#fff;}
+  .st b{display:block;font-size:10.5px;color:var(--ink);margin-bottom:2px;}
+  .st .n{display:inline-flex;width:17px;height:17px;border-radius:50%;background:var(--purple);color:#fff;font-size:9.5px;font-weight:800;align-items:center;justify-content:center;margin-bottom:4px;}
+  .st:not(:last-child)::after{content:"→";position:absolute;right:-13px;top:50%;transform:translateY(-50%);color:var(--purple3);font-weight:800;font-size:14px;}
+  .st.ours{background:#f7f2fc;border-color:#dcc9ee;} .st.ai{background:#efe7f7;border-color:#dcc9ee;}
+  .st.priv{background:#fffafa;border-color:#f0c9c3;} .st.priv .n{background:var(--red);}
+  .tag{display:inline-block;font-size:8.5px;font-weight:800;border-radius:20px;padding:1px 7px;margin-left:3px;vertical-align:1px;}
+  .t-adk{background:var(--tealbg);color:var(--teal);} .t-ours{background:#efe7f7;color:var(--purple);} .t-pd{background:var(--redbg);color:var(--red);} .t-no{background:var(--greenbg);color:#3c6b00;}
+
+  /* decision */
+  .dec{display:grid;grid-template-columns:repeat(4,1fr) 34px 1.15fr;gap:8px;align-items:stretch;}
+  .chk{border-radius:10px;padding:9px 10px;font-size:10px;line-height:1.45;border:1px solid var(--line);background:#fff;}
+  .chk .k{font-size:9px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--purple2);}
+  .chk b{display:block;font-size:11.5px;margin:1px 0 4px;}
+  .chk .pass{margin-top:5px;font-size:9.5px;color:#3c6b00;font-weight:700;}
+  .chk.ro{background:#fffafa;border-color:#f0c9c3;} .chk.ro .k{color:var(--red);} .chk.ro .pass{color:var(--red);}
+  .arr{display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--purple3);font-weight:800;}
+  .res{border-radius:10px;border:2px solid var(--purple3);background:#f7f2fc;padding:9px 10px;font-size:10px;line-height:1.45;}
+  .res .r{display:flex;gap:7px;align-items:flex-start;margin:4px 0;}
+  .pill{display:inline-block;font-size:9px;font-weight:800;border-radius:20px;padding:1px 8px;white-space:nowrap;}
+  .p-ro{background:var(--redbg);color:var(--red);} .p-yes{background:var(--greenbg);color:#3c6b00;} .p-no{background:#ecebf0;color:var(--muted);}
+
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+  .panel{border-radius:10px;padding:10px 12px;font-size:11px;line-height:1.5;border:1px solid var(--line);background:#fff;}
+  .panel h3{margin:0 0 6px;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--purple2);}
+  .panel ul{margin:0;padding-left:16px;} .panel li{margin:2px 0;} .panel p{margin:0 0 5px;}
+  .info{background:#eef4fb;border-color:#cfe0f2;} .info h3{color:var(--blue);}
+  .live{background:var(--greenbg);border-color:#cfe7a8;} .live h3{color:#3c6b00;}
+  .priv{background:var(--redbg);border-color:#f0c9c3;} .priv h3{color:var(--red);}
+
+  /* code */
+  .codes{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+  .cd{border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff;display:flex;flex-direction:column;}
+  .cd .ch{display:flex;justify-content:space-between;gap:8px;align-items:baseline;padding:7px 11px;background:#f6f3fa;border-bottom:1px solid var(--line);}
+  .cd .ch b{font-size:11px;color:var(--purple);} .cd .ch span{font:9.5px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--muted);}
+  .cd pre{margin:0;padding:9px 11px;font:10px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink);overflow-x:auto;background:#fcfbfd;flex:1;}
+  .cd .why{padding:7px 11px;font-size:10px;color:var(--muted);line-height:1.45;border-top:1px solid #f0edf5;}
+  pre .c{color:#8a8496;} pre .k{color:var(--purple);font-weight:700;} pre .s{color:#3c6b00;} pre .r{color:var(--red);font-weight:700;}
+
+  table{width:100%;border-collapse:collapse;font-size:10.5px;}
+  th{text-align:left;font-size:9px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border-bottom:1px solid var(--line);padding:5px 6px;}
+  td{border-bottom:1px solid #f0edf5;padding:5px 6px;vertical-align:top;line-height:1.4;}
+  td:first-child{font-weight:700;color:var(--purple);white-space:nowrap;}
+  .src{margin-top:12px;font-size:9.5px;color:#9791a3;text-align:right;}
+  @media screen and (max-width:900px){.steps,.dec,.two,.three,.codes{grid-template-columns:1fr;} .st:not(:last-child)::after{content:"↓";right:50%;top:auto;bottom:-15px;transform:none;} .arr{transform:rotate(90deg);}}
+  @media print{body{background:#fff;padding:0;} .page{box-shadow:none;border-radius:0;max-width:none;} @page{size:landscape;margin:8mm;} .panel,.cd,tr,.scroll,.st,.chk{break-inside:avoid;} h2{break-after:avoid;} .scroll svg{min-width:0;}}
+</style>
+</head>
+<body><div style="font:12px/1.4 system-ui,sans-serif;background:#fff8e1;border:1px solid #f0d58a;color:#5c4400;padding:6px 10px;margin:0 0 10px;border-radius:6px">Anonymized portfolio version: people, company, project IDs and client accounts are replaced with roles or fictional names. The legacy weekly-report comparison tool shown here is not included in this repo.</div>
+<div class="page">
+  <div class="brand">the company · Internal FDE program · MDL lead check · technical deep dive</div>
+  <h1>Agent internals: ADK runtime, agent, tools and memory</h1>
+  <div class="cap">A zoom into boxes 2–5 of the code overview (web server, agent and plugin, tools, memory). It shows how the app uses <b>ADK</b> (Google's Agent Development Kit), how our code plugs into it, and how <code>check_leads</code> turns an RB2B CSV into a ranked result. Code samples are taken from <code>lead-check-agent/</code>, shortened with <code>…</code>. The JSON example uses made-up values.</div>
+  <div class="hdr">
+    <span>Status: <b>beta in the lab (revision 00003)</b></span>
+    <span>Date: <b>11-06</b></span>
+    <span>Owner: <b>FDE (FDE)</b></span>
+    <span>Stack: <b>Python 3.13 · <code>google-adk==2.11.0</code> · <code>google-genai</code> · pandas · openpyxl</b></span>
+    <span>Parent view: <b><code>mdl-app-code-overview.html</code></b></span>
+  </div>
+  <div class="legend">
+    <span><i class="lg-box" style="background:var(--tealbg);border-color:#bfe6df"></i>ADK (library code)</span>
+    <span><i class="lg-box" style="background:#efe7f7;border-color:#dcc9ee"></i>our code (<code>lead_agent/</code>, <code>server.py</code>)</span>
+    <span><i class="lg-box" style="background:var(--purple);border-color:var(--purple)"></i>fixed rules, no AI</span>
+    <span><i class="lg-box" style="background:var(--redbg);border-color:#f0c9c3"></i>memory holding personal data</span>
+    <span><i class="lg-line" style="border-color:var(--purple)"></i>call</span>
+    <span><i class="lg-line" style="border-color:var(--red)"></i>carries personal data</span>
+    <span><i class="lg-line" style="border-color:#9791a3;border-top-style:dashed"></i>cleanup</span>
+  </div>
+
+  <h2>1 · Components inside the Python process</h2>
+  <div class="sub">Component view (C4 level 3). Top: ADK handles the request. Middle: our code, called by ADK through its extension points (plugin, tools). Bottom: everything is held in this process's memory.</div>
+  <div class="scroll">
+  <svg class="sv" viewBox="0 0 1180 446" role="img" aria-label="Components of the MDL agent process: ADK runtime, our agent code and the in-memory stores">
+    <defs>
+      <marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="#1F3A5F"/></marker>
+      <marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="#7FA7CF"/></marker>
+      <marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="#c0392b"/></marker>
+      <marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="#9791a3"/></marker>
+    </defs>
+
+    <!-- bands -->
+    <rect x="8" y="22" width="1164" height="130" rx="12" fill="#f4fbf9" stroke="#d6efea"/>
+    <text x="20" y="38" class="band" fill="#128a7d">REQUEST HANDLING · ADK RUNTIME + OUR WIRING</text>
+    <rect x="8" y="164" width="1164" height="138" rx="12" fill="#faf7fd" stroke="#ece3f5"/>
+    <text x="20" y="180" class="band" fill="#1F3A5F">OUR CODE · PLUGGED INTO ADK · RULES IN PLAIN PYTHON</text>
+    <rect x="8" y="314" width="1164" height="124" rx="12" fill="#fff8f7" stroke="#f5dcd8"/>
+    <text x="20" y="330" class="band" fill="#c0392b">MEMORY ONLY · ONE PROCESS · LOST ON RESTART</text>
+
+    <!-- row A -->
+    <rect x="20" y="46" width="260" height="96" rx="9" class="bxp"/>
+    <text x="31" y="63" class="t">FastAPI app</text>
+    <text x="31" y="76" class="m">server.py · get_fast_api_app(web=False)</text>
+    <text x="31" y="91" class="s">ADK builds the app and its routes; we add</text>
+    <text x="31" y="104" class="s">/whoami and /download, mount /app, and pass</text>
+    <text x="31" y="117" class="s">our own in-memory services (mdl-memory://).</text>
+    <text x="31" y="132" class="m">POST /run → runner.run_async(...)</text>
+
+    <rect x="310" y="46" width="260" height="96" rx="9" class="bxt"/>
+    <text x="321" y="63" class="t">Runner</text>
+    <text x="321" y="76" class="m">google.adk.runners · one per app</text>
+    <text x="321" y="91" class="s">Loads the conversation, runs the plugins,</text>
+    <text x="321" y="104" class="s">appends each event to the session, and loops</text>
+    <text x="321" y="117" class="s">model ↔ tools until Gemini gives a final answer.</text>
+    <text x="321" y="132" class="m">events → returned to the page as JSON</text>
+
+    <rect x="600" y="46" width="260" height="96" rx="9" class="bxp"/>
+    <text x="611" y="63" class="t">App + root agent</text>
+    <text x="611" y="76" class="m">agent.py · App("lead_agent") · Agent(...)</text>
+    <text x="611" y="91" class="s">An LlmAgent: model, instruction (the prompt),</text>
+    <text x="611" y="104" class="s">two tools. ADK sends Gemini the instruction,</text>
+    <text x="611" y="117" class="s">the history and the tool declarations.</text>
+    <text x="611" y="132" class="m">plugins=[InMemoryUploadsPlugin()]</text>
+
+    <rect x="890" y="46" width="270" height="96" rx="9" class="bxx"/>
+    <text x="901" y="63" class="t">Gemini on Vertex AI</text>
+    <text x="901" y="76" class="m">google-genai · vertexai=True · global</text>
+    <text x="901" y="91" class="s">Outside the process. Called as the service</text>
+    <text x="901" y="104" class="s">account (local: token from .gcloud).</text>
+    <text x="901" y="117" class="s">Gets placeholders and the summary JSON only.</text>
+    <text x="901" y="132" class="m">MODEL=gemini-3.5-flash</text>
+
+    <line x1="280" y1="94" x2="308" y2="94" class="ln" marker-end="url(#a1)"/>
+    <line x1="570" y1="94" x2="598" y2="94" class="ln" marker-end="url(#a1)"/>
+    <line x1="860" y1="86" x2="888" y2="86" class="ln" marker-end="url(#a1)"/>
+    <line x1="888" y1="104" x2="862" y2="104" class="lp" marker-end="url(#a2)"/>
+
+    <!-- row B -->
+    <rect x="20" y="188" width="260" height="104" rx="9" class="bxp"/>
+    <text x="31" y="205" class="t">Sweeper</text>
+    <text x="31" y="218" class="m">server.py · sweep_idle() every 60 s</text>
+    <text x="31" y="233" class="s">Started from the FastAPI lifespan. Lists all</text>
+    <text x="31" y="246" class="s">sessions; for any idle more than 30 minutes,</text>
+    <text x="31" y="259" class="s">deletes its artifacts, then the session.</text>
+    <text x="31" y="272" class="s">The plugin evicts idle uploads the same way.</text>
+    <text x="31" y="285" class="m">IDLE_TTL = UPLOAD_TTL = 30 * 60</text>
+
+    <rect x="310" y="188" width="260" height="104" rx="9" class="bxp"/>
+    <text x="321" y="205" class="t">Uploads plugin</text>
+    <text x="321" y="218" class="m">uploads.py · on_user_message_callback</text>
+    <text x="321" y="233" class="s">Runs before the message is stored. Moves each</text>
+    <text x="321" y="246" class="s">.csv/.xlsx (≤ 30 MB) into _UPLOADS and returns a</text>
+    <text x="321" y="259" class="s">new message with a text placeholder instead.</text>
+    <text x="321" y="272" class="s">Fails closed: any non-text part is removed.</text>
+    <text x="321" y="285" class="m">return types.Content(parts=new_parts)</text>
+
+    <rect x="600" y="188" width="260" height="104" rx="9" class="bxp"/>
+    <text x="611" y="205" class="t">Tools</text>
+    <text x="611" y="218" class="m">tools.py · @_safe async def check_leads(...)</text>
+    <text x="611" y="233" class="s">Plain async functions. ADK wraps each in a</text>
+    <text x="611" y="246" class="s">FunctionTool and reads the declaration from</text>
+    <text x="611" y="259" class="s">the signature and docstring. tool_context is</text>
+    <text x="611" y="272" class="s">injected by ADK and hidden from Gemini.</text>
+    <text x="611" y="285" class="m">check_leads · score_weekly_report</text>
+
+    <rect x="890" y="188" width="270" height="104" rx="9" class="bxc"/>
+    <text x="901" y="205" class="t w">Rules engine</text>
+    <text x="901" y="218" class="wm">lead_check/ · baseline/</text>
+    <text x="901" y="233" class="w2">engine.run_lead_check(files, top_n) → dict.</text>
+    <text x="901" y="246" class="w2">Synchronous pandas, no I/O, no AI. Uses</text>
+    <text x="901" y="259" class="w2">lists.py (13 CSVs → Lists), titles.role(),</text>
+    <text x="901" y="272" class="w2">workbook.write_workbook(). Baseline runs</text>
+    <text x="901" y="285" class="w2">the legacy script as a subprocess.</text>
+
+    <line x1="440" y1="142" x2="440" y2="186" class="ln" marker-end="url(#a1)"/>
+    <text x="446" y="160" class="lb">① plugin hook, first</text>
+    <line x1="730" y1="142" x2="730" y2="186" class="ln" marker-end="url(#a1)"/>
+    <text x="736" y="160" class="lb">② Gemini asks for a tool call</text>
+    <line x1="860" y1="240" x2="888" y2="240" class="ln" marker-end="url(#a1)"/>
+    <text x="874" y="234" class="lb" text-anchor="middle">③</text>
+
+    <!-- row C -->
+    <rect x="20" y="338" width="260" height="90" rx="9" class="bxr"/>
+    <text x="31" y="355" class="t">SESSIONS</text>
+    <text x="31" y="368" class="m">InMemorySessionService</text>
+    <text x="31" y="383" class="s">Each conversation's events: your text,</text>
+    <text x="31" y="396" class="s">placeholders, tool calls, summary JSON,</text>
+    <text x="31" y="409" class="s">Gemini's answers. Keyed by user (email).</text>
+    <text x="31" y="422" class="s">No file bytes; no names by default.</text>
+
+    <rect x="310" y="338" width="260" height="90" rx="9" class="bxr"/>
+    <text x="321" y="355" class="t">_UPLOADS</text>
+    <text x="321" y="368" class="m">dict[session_id → {files, touched}]</text>
+    <text x="321" y="383" class="s">The raw RB2B file bytes, per conversation.</text>
+    <text x="321" y="396" class="s">Read by the tools with</text>
+    <text x="321" y="409" class="s">uploaded_files(tool_context.session.id).</text>
+    <text x="321" y="422" class="s">Evicted after 30 idle minutes.</text>
+
+    <rect x="600" y="338" width="260" height="90" rx="9" class="bxr"/>
+    <text x="611" y="355" class="t">ARTIFACTS</text>
+    <text x="611" y="368" class="m">InMemoryArtifactService</text>
+    <text x="611" y="383" class="s">The .xlsx workbook, with names. Saved by</text>
+    <text x="611" y="396" class="s">tool_context.save_artifact(); loaded and</text>
+    <text x="611" y="409" class="s">deleted by GET /download (once), or by</text>
+    <text x="611" y="422" class="s">the sweeper.</text>
+
+    <rect x="890" y="338" width="270" height="90" rx="9" class="bxr"/>
+    <text x="901" y="355" class="t">Scratch folder</text>
+    <text x="901" y="368" class="m">tempfile.TemporaryDirectory(dir="/dev/shm")</text>
+    <text x="901" y="383" class="s">RAM-backed. The workbook is written here,</text>
+    <text x="901" y="396" class="s">read back as bytes, then the folder is</text>
+    <text x="901" y="409" class="s">deleted. Also holds the legacy script's files</text>
+    <text x="901" y="422" class="s">during score_weekly_report.</text>
+
+    <line x1="150" y1="292" x2="150" y2="336" class="lgy" marker-end="url(#a4)"/>
+    <text x="156" y="318" class="lb">delete idle</text>
+    <line x1="440" y1="292" x2="440" y2="336" class="lr" marker-end="url(#a3)"/>
+    <text x="446" y="318" class="lbr">file bytes</text>
+    <path d="M640,292 C640,316 560,316 548,334" class="lr" marker-end="url(#a3)"/>
+    <text x="560" y="309" class="lbr" text-anchor="end">read file</text>
+    <line x1="760" y1="292" x2="760" y2="336" class="lr" marker-end="url(#a3)"/>
+    <text x="766" y="318" class="lbr">save_artifact</text>
+    <line x1="1025" y1="292" x2="1025" y2="336" class="lr" marker-end="url(#a3)"/>
+    <text x="1031" y="318" class="lbr">workbook build</text>
+  </svg>
+  </div>
+
+  <h2>2 · What the ADK Runner does for one <code>POST /run</code></h2>
+  <div class="sub">ADK does the orchestration; our code runs only at steps 2 and 5. <span class="tag t-adk">ADK</span> library · <span class="tag t-ours">ours</span> our code.</div>
+  <div class="steps">
+    <div class="st"><span class="n">1</span><b>Load session</b><span class="tag t-adk">ADK</span><br><code>SESSIONS.get_session(app, user, id)</code>. The user ID is the email the access check verified.</div>
+    <div class="st priv"><span class="n">2</span><b>Plugin hook</b><span class="tag t-ours">ours</span><br><code>on_user_message_callback</code> swaps the file for a placeholder. Returning a new <code>Content</code> replaces the message.</div>
+    <div class="st"><span class="n">3</span><b>Store message</b><span class="tag t-adk">ADK</span><br>The cleaned message is appended to the session as an event. The file never reaches the session.</div>
+    <div class="st ai"><span class="n">4</span><b>Call Gemini</b><span class="tag t-adk">ADK</span><br>Builds the request: instruction + history + tool declarations. Gemini replies with a <code>function_call</code>.</div>
+    <div class="st ours"><span class="n">5</span><b>Run the tool</b><span class="tag t-ours">ours</span><br>ADK calls <code>check_leads(tool_context, top_n)</code> and stores the returned dict as a <code>function_response</code> event.</div>
+    <div class="st ai"><span class="n">6</span><b>Call Gemini again</b><span class="tag t-adk">ADK</span><br>With the summary JSON. Gemini writes the 2–4 sentences; no more tool calls, so the loop ends.</div>
+    <div class="st"><span class="n">7</span><b>Return events</b><span class="tag t-adk">ADK</span><br>All events go back to the page. It draws the card from the <code>function_response</code> and shows Gemini's text.</div>
+  </div>
+
+  <h2>3 · <code>check_leads</code>, step by step</h2>
+  <div class="sub">Two lanes: the tool runs on the event loop (async I/O, ADK calls); the engine runs in a worker thread (CPU-bound pandas), so other requests aren't blocked. One input, two outputs: a summary without names for Gemini, and the full workbook for the user.</div>
+  <div class="scroll">
+  <svg class="sv" viewBox="0 0 1180 330" role="img" aria-label="check_leads flow from uploaded files through the rules engine to the summary and workbook">
+    <defs>
+      <marker id="b1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="#1F3A5F"/></marker>
+      <marker id="b3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="#c0392b"/></marker>
+    </defs>
+    <rect x="8" y="10" width="1164" height="112" rx="12" fill="#faf7fd" stroke="#ece3f5"/>
+    <text x="20" y="26" class="band" fill="#1F3A5F">tools.py · ASYNC, ON THE EVENT LOOP</text>
+    <rect x="8" y="160" width="1164" height="160" rx="12" fill="#f4f1f9" stroke="#ddd2ec"/>
+    <text x="125" y="176" class="band" fill="#1F3A5F">lead_check/engine.py · WORKER THREAD (asyncio.to_thread) · PURE PANDAS, NO I/O, NO AI</text>
+
+    <!-- tool lane -->
+    <rect x="20" y="34" width="180" height="78" rx="9" class="bxp"/>
+    <text x="30" y="51" class="t">a · Get the files</text>
+    <text x="30" y="64" class="m">uploaded_files(session.id)</text>
+    <text x="30" y="79" class="s">Keeps .csv only. None in</text>
+    <text x="30" y="92" class="s">memory → error dict asking</text>
+    <text x="30" y="105" class="s">to upload again.</text>
+
+    <rect x="222" y="34" width="198" height="78" rx="9" class="bxp"/>
+    <text x="232" y="51" class="t">b · Run the rules</text>
+    <text x="232" y="64" class="m">await to_thread(run_lead_check,</text>
+    <text x="232" y="77" class="m">  files, top_n, include_names)</text>
+    <text x="232" y="92" class="s">include_names comes from</text>
+    <text x="232" y="105" class="s">SHARE_NAMES_WITH_MODEL (off)</text>
+
+    <rect x="760" y="34" width="190" height="78" rx="9" class="bxp"/>
+    <text x="770" y="51" class="t">c · Build the workbook</text>
+    <text x="770" y="64" class="m">to_thread(write_workbook, …)</text>
+    <text x="770" y="79" class="s">5 sheets via openpyxl, in a</text>
+    <text x="770" y="92" class="s">/dev/shm temp folder; read</text>
+    <text x="770" y="105" class="s">back as bytes, folder deleted.</text>
+
+    <rect x="972" y="34" width="188" height="78" rx="9" class="bxp"/>
+    <text x="982" y="51" class="t">d · Save and return</text>
+    <text x="982" y="64" class="m">tool_context.save_artifact()</text>
+    <text x="982" y="79" class="s">Returns {**summary,</text>
+    <text x="982" y="92" class="s">status: "ok", workbook_for_</text>
+    <text x="982" y="105" class="s">download: "MDL Lead Check …"}</text>
+
+    <line x1="200" y1="73" x2="220" y2="73" class="lr" marker-end="url(#b3)"/>
+    <line x1="950" y1="73" x2="970" y2="73" class="lr" marker-end="url(#b3)"/>
+
+    <!-- engine lane -->
+    <rect x="20" y="186" width="170" height="124" rx="9" class="bxc"/>
+    <text x="30" y="203" class="t w">1 · read_exports</text>
+    <text x="30" y="217" class="w2">pd.read_csv each file as</text>
+    <text x="30" y="230" class="w2">text; skip duplicates by</text>
+    <text x="30" y="243" class="w2">md5; check it's RB2B;</text>
+    <text x="30" y="256" class="w2">parse dates. Split person</text>
+    <text x="30" y="269" class="w2">rows from company-only.</text>
+    <text x="30" y="290" class="wm">window = newest − 14 d</text>
+
+    <rect x="204" y="186" width="170" height="124" rx="9" class="bxc"/>
+    <text x="214" y="203" class="t w">2 · One row per person</text>
+    <text x="214" y="217" class="w2">Key: LinkedIn URL, else</text>
+    <text x="214" y="230" class="w2">name + email. Merge their</text>
+    <text x="214" y="243" class="w2">visits: pages, days seen,</text>
+    <text x="214" y="256" class="w2">first/last seen; the latest</text>
+    <text x="214" y="269" class="w2">row gives title and company.</text>
+    <text x="214" y="290" class="wm">agg[__key] = {...}</text>
+
+    <rect x="388" y="186" width="170" height="124" rx="9" class="bxc"/>
+    <text x="398" y="203" class="t w">3 · Role from title</text>
+    <text x="398" y="217" class="w2">titles.role(title) uses</text>
+    <text x="398" y="230" class="w2">a legacy classify() + our</text>
+    <text x="398" y="243" class="w2">regexes → leads, practitioner,</text>
+    <text x="398" y="256" class="w2">unclear, weak or no title.</text>
+    <text x="398" y="269" class="w2">settle_titles hook: unused.</text>
+    <text x="398" y="290" class="wm">(strength, persona)</text>
+
+    <rect x="572" y="186" width="170" height="124" rx="9" class="bxc"/>
+    <text x="582" y="203" class="t w">4 · _check_person</text>
+    <text x="582" y="217" class="w2">The four checks (section 4)</text>
+    <text x="582" y="230" class="w2">→ YES / NO / RULED OUT,</text>
+    <text x="582" y="243" class="w2">points, why, flags and</text>
+    <text x="582" y="256" class="w2">next step, plus every</text>
+    <text x="582" y="269" class="w2">field for the workbook.</text>
+    <text x="582" y="290" class="wm">→ one dict per person</text>
+
+    <rect x="756" y="186" width="170" height="124" rx="9" class="bxc"/>
+    <text x="766" y="203" class="t w">5 · Rank, top N</text>
+    <text x="766" y="217" class="w2">YESes sorted by points,</text>
+    <text x="766" y="230" class="w2">then latest visit. Rank</text>
+    <text x="766" y="243" class="w2">within each account;</text>
+    <text x="766" y="256" class="w2">Shown = rank ≤ top_n (3).</text>
+    <text x="766" y="269" class="w2">Points never make a YES.</text>
+    <text x="766" y="290" class="wm">groupby().cumcount() + 1</text>
+
+    <rect x="940" y="186" width="220" height="124" rx="9" class="bxc"/>
+    <text x="950" y="203" class="t w">6 · Notes and summary</text>
+    <text x="950" y="217" class="w2">_account_notes: Tier 1/2 accounts on</text>
+    <text x="950" y="230" class="w2">solution pages, no person identified.</text>
+    <text x="950" y="243" class="w2">_whales: why a whale has no lead.</text>
+    <text x="950" y="256" class="w2">_summary: counts and leads by title,</text>
+    <text x="950" y="269" class="w2">links via page_link(), no names.</text>
+    <text x="950" y="290" class="wm">{summary, people, notes}</text>
+
+    <line x1="190" y1="248" x2="202" y2="248" class="ln" marker-end="url(#b1)"/>
+    <line x1="374" y1="248" x2="386" y2="248" class="ln" marker-end="url(#b1)"/>
+    <line x1="558" y1="248" x2="570" y2="248" class="ln" marker-end="url(#b1)"/>
+    <line x1="742" y1="248" x2="754" y2="248" class="ln" marker-end="url(#b1)"/>
+    <line x1="926" y1="248" x2="938" y2="248" class="ln" marker-end="url(#b1)"/>
+
+    <!-- lane crossings -->
+    <path d="M312,112 C312,140 105,140 105,184" class="lr" marker-end="url(#b3)"/>
+    <text x="210" y="138" class="lbr" text-anchor="middle">file bytes</text>
+    <path d="M1050,186 C1050,150 855,150 855,114" class="lr" marker-end="url(#b3)"/>
+    <text x="960" y="146" class="lbr" text-anchor="middle">people + notes DataFrames (names)</text>
+    <path d="M1100,186 C1100,150 1066,140 1066,114" class="ln" marker-end="url(#b1)"/>
+    <text x="1160" y="132" class="lb" text-anchor="end">summary (no names)</text>
+
+    <!-- what leaves -->
+    <rect x="440" y="34" width="300" height="78" rx="9" class="bxg"/>
+    <text x="452" y="51" class="t">What the tool returns, and to whom</text>
+    <text x="452" y="66" class="s">→ Gemini and the page: the summary dict, as the</text>
+    <text x="452" y="79" class="s">  function_response. No names, emails, LinkedIn.</text>
+    <text x="452" y="94" class="lbr">→ the user only: the workbook artifact, with names,</text>
+    <text x="452" y="107" class="lbr">  via GET /download, once.</text>
+  </svg>
+  </div>
+
+  <h2>4 · The decision for one person (<code>_check_person</code>)</h2>
+  <div class="sub">Four independent checks, then one rule. Every threshold, list and weight comes from <code>lead_check/lists/</code>, so Marketing can change them without a code change.</div>
+  <div class="dec">
+    <div class="chk"><div class="k">Who</div><b>Strong role?</b><code>titles.role(title)</code>: leads or buys AI/data (heads, directors, VPs, CTOs, procurement) or does it hands-on (ML engineers, data scientists, researchers).<div class="pass">✓ LEADS or PRACTITIONER</div></div>
+    <div class="chk"><div class="k">Which</div><b>Tier 1 or 2 account?</b><code>match_account(website, company)</code> via <code>accounts</code>, <code>account_aliases</code>, <code>company_names</code>. Otherwise a new logo if revenue is above $50M and not Education.<div class="pass">✓ tier is 1 or 2</div></div>
+    <div class="chk"><div class="k">What</div><b>Strong interest?</b><code>page_kinds(recent_urls)</code>: regexes from <code>pages.csv</code> on pages seen in the visit window (14 days to the newest visit in the file).<div class="pass">✓ Contact Us or a solution page</div></div>
+    <div class="chk ro"><div class="k">Rule out</div><b>Any reason to drop?</b>Own staff · competitor · wrong company match from a personal email · student or job seeker · outside the focus regions (<code>locate(city, state)</code>).<div class="pass">✕ any one rules them out</div></div>
+    <div class="arr">→</div>
+    <div class="res">
+      <div style="font-size:9px;font-weight:800;letter-spacing:.07em;color:var(--purple2);text-transform:uppercase">Result</div>
+      <div class="r"><span class="pill p-ro">RULED OUT</span><span>if any rule-out applies</span></div>
+      <div class="r"><span class="pill p-yes">YES</span><span>else if Who, Which and What all pass</span></div>
+      <div class="r"><span class="pill p-no">NO</span><span>otherwise, with the reasons</span></div>
+      <div style="margin-top:6px;border-top:1px solid #dcc9ee;padding-top:5px"><b style="font-size:10px;color:var(--purple)">Points (rank YESes only, max 10)</b><br>Contact Us +3 · service page +2 · leads/buys +2 <i>or</i> practitioner +1 · AI article +1 · 2+ visits +1 · seen in last 7 days +1</div>
+      <div style="margin-top:4px;color:var(--muted)">Flags: find work email · partner company · region unknown.</div>
+      <div style="margin-top:4px;color:var(--muted)">ICP label (YES only, <code>icp_label</code>): Physical AI / GenAI data / both / AI Data (general), from AI Data page paths and the title, else the account segment. Never changes the result.</div>
+    </div>
+  </div>
+
+  <h2>5 · Code samples</h2>
+  <div class="codes">
+    <div class="cd">
+      <div class="ch"><b>Wiring the agent</b><span>lead_agent/agent.py</span></div>
+<pre>model = <span class="k">Gemini</span>(
+    model=os.environ.get(<span class="s">"MODEL"</span>, <span class="s">"gemini-3.5-flash"</span>),
+    client_kwargs={<span class="s">"vertexai"</span>: True, <span class="s">"project"</span>: PROJECT,
+                   <span class="s">"location"</span>: os.environ.get(<span class="s">"GOOGLE_CLOUD_LOCATION"</span>, <span class="s">"global"</span>),
+                   <span class="s">"credentials"</span>: project_credentials()},
+)
+root_agent = <span class="k">Agent</span>(
+    name=<span class="s">"mdl_lead_check"</span>, model=model,
+    instruction=INSTRUCTION,                  <span class="c"># the prompt</span>
+    tools=[check_leads, score_weekly_report],  <span class="c"># plain functions</span>
+)
+app = <span class="k">App</span>(name=<span class="s">"lead_agent"</span>, root_agent=root_agent,
+          plugins=[InMemoryUploadsPlugin()])</pre>
+      <div class="why">ADK finds <code>app</code> in the <code>lead_agent</code> package. The model is a setting, so moving to the AI gateway later is a config change.</div>
+    </div>
+
+    <div class="cd">
+      <div class="ch"><b>In-memory services and the app</b><span>server.py</span></div>
+<pre>SESSIONS = <span class="k">InMemorySessionService</span>()
+ARTIFACTS = <span class="k">InMemoryArtifactService</span>()
+<span class="c"># our own instances, so the sweeper and /download can reach them</span>
+get_service_registry().register_session_service(
+    <span class="s">"mdl-memory"</span>, lambda uri, **kw: SESSIONS)
+get_service_registry().register_artifact_service(
+    <span class="s">"mdl-memory"</span>, lambda uri, **kw: ARTIFACTS)
+
+app = <span class="k">get_fast_api_app</span>(
+    agents_dir=str(ROOT), web=DEV_UI, lifespan=lifespan,
+    session_service_uri=<span class="s">"mdl-memory://"</span>,
+    artifact_service_uri=<span class="s">"mdl-memory://"</span>,
+    use_local_storage=<span class="r">False</span>, …)   <span class="c"># nothing to .adk/</span></pre>
+      <div class="why">ADK resolves service URIs through a registry. Registering a custom scheme hands it our objects instead of a database or a bucket.</div>
+    </div>
+
+    <div class="cd">
+      <div class="ch"><b>The plugin hook</b><span>lead_agent/uploads.py</span></div>
+<pre><span class="k">class</span> InMemoryUploadsPlugin(BasePlugin):
+    <span class="k">async def</span> on_user_message_callback(self, *, invocation_context, user_message):
+        parts = user_message.parts or []
+        <span class="k">if</span> all(_plain_text(p) <span class="k">for</span> p <span class="k">in</span> parts):
+            <span class="k">return</span> None                       <span class="c"># unchanged</span>
+        entry = _UPLOADS.setdefault(invocation_context.session.id, …)
+        <span class="k">for</span> p <span class="k">in</span> parts:
+            <span class="k">if</span> p.inline_data <span class="k">is</span> None:          <span class="c"># fail closed</span>
+                new_parts.append(Part(text=p.text) <span class="k">if</span> _plain_text(p)
+                    <span class="k">else</span> Part(text=<span class="s">"[Removed: only files uploaded on the page …]"</span>))
+                <span class="k">continue</span>
+            entry[<span class="s">"files"</span>][name] = p.inline_data.data   <span class="c"># <span class="r">bytes stay here</span></span>
+            new_parts.append(Part(text=placeholder(name)))
+        <span class="k">return</span> types.Content(role=user_message.role, parts=new_parts)</pre>
+      <div class="why">Returning a <code>Content</code> from this callback replaces the user's message before ADK stores it or sends it to Gemini.</div>
+    </div>
+
+    <div class="cd">
+      <div class="ch"><b>The tool</b><span>lead_agent/tools.py</span></div>
+<pre><span class="k">@_safe</span>                                   <span class="c"># any exception → plain error dict</span>
+<span class="k">async def</span> check_leads(tool_context: ToolContext, top_n: int = 0) -> dict:
+    <span class="s">"""Runs the agreed lead check on the uploaded RB2B CSV exports. …</span>
+<span class="s">    Args:</span>
+<span class="s">      top_n: Leads shown per account (e.g. 3, 5, 10, 20). 0 uses the default (3)."""</span>
+    uploads = uploaded_files(tool_context.session.id)
+    csvs = sorted(n <span class="k">for</span> n <span class="k">in</span> uploads <span class="k">if</span> n.lower().endswith(<span class="s">".csv"</span>))
+    …
+    result = <span class="k">await</span> asyncio.to_thread(run_lead_check, [(n, uploads[n]) <span class="k">for</span> n <span class="k">in</span> csvs],
+        top_n=top_n <span class="k">or</span> None, include_names=_flag(<span class="s">"SHARE_NAMES_WITH_MODEL"</span>))
+    <span class="k">with</span> tempfile.TemporaryDirectory(dir=SCRATCH) <span class="k">as</span> tmp:
+        <span class="k">await</span> asyncio.to_thread(write_workbook, result, str(path))
+        workbook = path.read_bytes()
+    <span class="k">await</span> tool_context.save_artifact(out_name, Part.from_bytes(data=workbook, …))
+    <span class="k">return</span> {**result[<span class="s">"summary"</span>], <span class="s">"status"</span>: <span class="s">"ok"</span>, <span class="s">"workbook_for_download"</span>: out_name}</pre>
+      <div class="why"><code>@_safe</code> uses <code>functools.wraps</code>, so ADK still sees the real signature and docstring. On Cloud Run it logs only the error type.</div>
+    </div>
+
+    <div class="cd">
+      <div class="ch"><b>The decision and the ranking</b><span>lead_agent/lead_check/engine.py</span></div>
+<pre><span class="c"># inside _check_person: out = rule-outs, no = failed checks</span>
+strong_interest = bool(kinds.get(<span class="s">"contact"</span>) <span class="k">or</span> kinds.get(<span class="s">"service"</span>))
+strong_role = strength <span class="k">in</span> (LEADS, PRACTITIONER)
+<span class="k">if not</span> strong_role:      no.append(<span class="s">"no strong role"</span>)
+<span class="k">if not</span> strong_interest:  no.append(<span class="s">"no Contact Us or solution page"</span>)
+<span class="k">if</span> tier <span class="k">is</span> None:         no.append(<span class="s">"not a Tier 1/2 account"</span>)
+result = <span class="s">"RULED OUT"</span> <span class="k">if</span> out <span class="k">else</span> (<span class="s">"YES"</span> <span class="k">if not</span> no <span class="k">else</span> <span class="s">"NO"</span>)
+
+<span class="c"># inside run_lead_check: rank YESes within each account</span>
+yes = people[people[<span class="s">"Result"</span>] == <span class="s">"YES"</span>].sort_values(
+    [<span class="s">"Points"</span>, <span class="s">"__last"</span>], ascending=[False, False])
+yes = yes.assign(**{<span class="s">"Rank in account"</span>: yes.groupby(<span class="s">"Account key"</span>).cumcount() + 1})
+people[<span class="s">"Shown"</span>] = people[<span class="s">"Rank in account"</span>].le(top_n).map({True: <span class="s">"Yes"</span>, False: <span class="s">""</span>})</pre>
+      <div class="why">Points are added up separately and only order the YESes; they can't turn a NO into a YES.</div>
+    </div>
+
+    <div class="cd">
+      <div class="ch"><b>What Gemini sees</b><span>tool declaration + function_response</span></div>
+<pre><span class="c"># declaration ADK builds from the signature (tool_context is hidden)</span>
+{<span class="s">"name"</span>: <span class="s">"check_leads"</span>, <span class="s">"description"</span>: <span class="s">"Runs the agreed lead check …"</span>,
+ <span class="s">"parameters"</span>: {<span class="s">"type"</span>: <span class="s">"object"</span>, <span class="s">"properties"</span>: {<span class="s">"top_n"</span>: {<span class="s">"type"</span>: <span class="s">"integer"</span>}}}}
+
+<span class="c"># the result it reads back (made-up values; shortened)</span>
+{<span class="s">"status"</span>: <span class="s">"ok"</span>, <span class="s">"counts"</span>: {<span class="s">"yes"</span>: 7, <span class="s">"shown"</span>: 5, <span class="s">"ruled_out"</span>: 41, …},
+ <span class="s">"tier_1"</span>: [{<span class="s">"account"</span>: <span class="s">"Example Corp"</span>, <span class="s">"yes_total"</span>: 2, <span class="s">"leads"</span>: [
+   {<span class="s">"rank"</span>: 1, <span class="s">"points"</span>: 8, <span class="s">"title"</span>: <span class="s">"Director, ML Platform"</span>,
+    <span class="s">"why"</span>: <span class="s">"Contact Us +3 · service page +2 · leads/buys AI/data +2 · …"</span>,
+    <span class="s">"pages"</span>: [<span class="s">"https://www.example.com/contact"</span>],
+    <span class="s">"next_step"</span>: <span class="s">"Client-success owner reaches out; …"</span>}]}],
+ <span class="s">"left_out_by_reason"</span>: {<span class="s">"no strong role"</span>: 120, …},
+ <span class="s">"names_included"</span>: <span class="r">false</span>, <span class="s">"workbook_for_download"</span>: <span class="s">"MDL Lead Check 2026-11-04 0930.xlsx"</span>}</pre>
+      <div class="why">Leads are described by title, company and points; no name, email or LinkedIn key exists unless <code>include_names</code> is on. A test checks this.</div>
+    </div>
+  </div>
+
+  <h2>6 · How the code is organised</h2>
+  <table>
+    <tr><th>Module</th><th>Responsibility</th><th>Style</th><th>Depends on</th><th>Tested by</th></tr>
+    <tr><td><code>server.py</code></td><td>App factory, in-memory services, <code>/whoami</code>, <code>/download</code>, sweeper</td><td>Thin wiring around ADK</td><td>ADK, <code>access.py</code></td><td><code>test_web.py</code></td></tr>
+    <tr><td><code>agent.py</code></td><td>Instruction, model, root agent, <code>App</code></td><td>Declarative; no logic</td><td>ADK, <code>tools</code>, <code>uploads</code></td><td>Not tested directly</td></tr>
+    <tr><td><code>uploads.py</code></td><td>Plugin and the <code>_UPLOADS</code> store</td><td>One ADK callback; fails closed</td><td>ADK <code>BasePlugin</code></td><td><code>test_web.py</code> (3 tests)</td></tr>
+    <tr><td><code>tools.py</code></td><td>The two tools: files in, summary out, workbook saved</td><td>Async; CPU work in <code>to_thread</code>; <code>@_safe</code></td><td>engine, workbook, baseline</td><td>Not tested directly; the engine is</td></tr>
+    <tr><td><code>lead_check/engine.py</code></td><td>Read, the four checks, ranking, notes, summary</td><td>Pure: bytes and lists in, dict out</td><td>pandas, <code>lists</code>, <code>titles</code>, <code>links</code></td><td><code>test_lead_check.py</code></td></tr>
+    <tr><td><code>lead_check/lists.py</code></td><td>13 CSVs → a typed <code>Lists</code> dataclass</td><td>Data, not code</td><td>—</td><td>Engine tests</td></tr>
+    <tr><td><code>lead_check/titles.py</code></td><td>Role from job title (the legacy <code>classify()</code> + <code>role()</code>)</td><td>Regex rules</td><td>—</td><td><code>test_lead_check.py</code></td></tr>
+    <tr><td><code>lead_check/workbook.py</code></td><td>The 5-sheet .xlsx</td><td>Write-only</td><td>pandas, openpyxl</td><td>Engine tests</td></tr>
+    <tr><td><code>baseline/runner.py</code></td><td>Runs the legacy script unchanged, summarises its workbook</td><td>Subprocess</td><td><code>legacy_report.py</code></td><td><code>test_ground_truth.py</code> (local only)</td></tr>
+  </table>
+
+  <div class="three" style="margin-top:12px">
+    <div class="panel live">
+      <h3>Conventions</h3>
+      <ul>
+        <li><b>Rules are pure functions.</b> The engine never touches the network, disk, ADK or Gemini, so it runs the same in tests, the CLI and the app.</li>
+        <li><b>ADK only at the edges:</b> one plugin, two tools, one <code>App</code>. No custom agent classes.</li>
+        <li><b>Blocking work off the event loop:</b> <code>asyncio.to_thread</code> for the engine, the workbook and the legacy script.</li>
+      </ul>
+    </div>
+    <div class="panel priv">
+      <h3>Where personal data can be</h3>
+      <ul>
+        <li><code>_UPLOADS</code>, the engine's DataFrames, the scratch folder and the workbook artifact.</li>
+        <li><b>Never</b> in session events, the summary dict or anything sent to Gemini, unless <code>SHARE_NAMES_WITH_MODEL=true</code>.</li>
+        <li>Error text can quote rows, so <code>@_safe</code> never forwards it.</li>
+      </ul>
+    </div>
+    <div class="panel info">
+      <h3>Errors</h3>
+      <ul>
+        <li><code>LeadCheckError</code> / <code>BaselineError</code>: expected problems (not an RB2B file, no dates). The message goes back as <code>{"status":"error"}</code>.</li>
+        <li>Anything else: <code>@_safe</code> returns a generic message.</li>
+        <li>Gemini explains the error to the user; the instruction tells it what to ask for.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="src">Source: <code>lead-check-agent/</code> as of 11-06 (google-adk 2.11.0) · views: component (C4 L3), runtime sequence, tool flow, decision logic, code map · see also mdl-app-code-overview.html</div>
+</div>
+</body>
+</html>

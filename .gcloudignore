@@ -1,0 +1,19 @@
+# What `gcloud run deploy --source` must never upload to Cloud Build
+.gcloudignore
+.git/
+.gitignore
+.gcloud/
+.venv/
+.env
+lead_agent/.env
+.adk/
+lead_agent/.adk/
+outputs/
+tests/
+*.csv
+# Marketing's editable lists ship with the app (no data in them)
+!lead_agent/lead_check/lists/*.csv
+*.xlsx
+__pycache__/
+.pytest_cache/
+.DS_Store

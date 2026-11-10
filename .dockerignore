@@ -1,0 +1,16 @@
+# Never ship sign-in, local data or outputs into the image
+.gcloud/
+.venv/
+.env
+lead_agent/.env
+lead_agent/.adk/
+.adk/
+outputs/
+tests/
+*.csv
+# Marketing's editable lists ship with the app (no data in them)
+!lead_agent/lead_check/lists/*.csv
+*.xlsx
+__pycache__/
+.pytest_cache/
+.DS_Store
