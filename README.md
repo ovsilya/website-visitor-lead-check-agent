@@ -56,6 +56,12 @@ Every lead's **reason and next step are written by the rules**, so they are cons
 - **Least privilege:** the runtime service account can only call Vertex AI and write logs. Local runs use a **project-only gcloud config** (`CLOUDSDK_CONFIG=./.gcloud`) through a refresh handler, never the machine-wide ADC login.
 - Pinned front-end libraries are vendored with SHA-256 checksums (`ui/vendor/SHA256SUMS`).
 
+## Diagrams
+
+Anonymized architecture diagrams: previews in [`docs/diagrams/`](docs/diagrams/README.md), interactive versions on [GitHub Pages](https://ovsilya.github.io/website-visitor-lead-check-agent/diagrams/target-architecture.html).
+
+<a href="docs/diagrams/README.md"><img src="docs/diagrams/png/target-architecture.png" width="720" alt="Target architecture: hub-and-spoke with Gemini Enterprise and the agent in the business unit's project"></a>
+
 ## Repository layout
 
 ```
@@ -76,7 +82,7 @@ lead_agent/
                        partners, pages, ICP rules, regions, personal email domains, settings
 ui/                    chat page (vanilla JS, marked + DOMPurify, pinned)
 tests/                 rules, rule-outs, ICP labels, privacy, web security (synthetic data)
-docs/diagrams/         anonymized architecture diagrams (HTML)
+docs/diagrams/         anonymized architecture diagrams (HTML + PNG previews)
 deploy.sh, grant-tester.sh, run.sh, gcloud.sh, Dockerfile
 ```
 

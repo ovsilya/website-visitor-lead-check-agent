@@ -1,14 +1,49 @@
 # Diagrams
 
-Open any file in a browser. They are standalone HTML (no external assets).
+Click a preview for the full-size image. The interactive HTML version opens on GitHub Pages.
 
-| File | What it shows |
-|---|---|
-| [lead-check-rules.html](lead-check-rules.html) | The agreed approach: the four checks (who · which · what · rule out), points, top N per account, and an example answer |
-| [app-code-overview.html](app-code-overview.html) | One Python process on Cloud Run: access check, ADK API, upload plugin, agent, tool, memory-only storage, accounts and permissions, code map |
-| [agent-internals.html](agent-internals.html) | How the app uses ADK: runner, plugin hooks, tool context, artifacts, the rules engine step by step, tests |
-| [data-flow-and-privacy.html](data-flow-and-privacy.html) | Where personal data goes (and doesn't): upload → memory → rules → model (counts and titles only) → download once |
-| [target-architecture.html](target-architecture.html) | Hub-and-spoke target: Gemini Enterprise (A2A import) in the hub, the agent in the business unit's own project, central AI gateway, weekly scheduled run |
-| [terraform-cicd-deployment.html](terraform-cicd-deployment.html) | Two lanes to production: infrastructure via Terraform (plan/apply on git tags) and app release via Cloud Build, three environments |
+### Lead check rules
+The four checks, points and top N per account, with an example answer
 
-**Anonymized.** People are replaced by roles, the company by "the company", cloud project IDs and repo names by placeholders, and client accounts by fictional names (Globex, Initech, …). Internal decision-log IDs are removed. Some diagrams still mention a *legacy weekly report* that the agent could run for comparison. That tool reproduced a colleague's script and is **not** part of this repository.
+<a href="png/lead-check-rules.png"><img src="png/lead-check-rules.png" width="720" alt="Lead check rules"></a>
+
+[Open interactive version](https://ovsilya.github.io/website-visitor-lead-check-agent/diagrams/lead-check-rules.html)
+
+### App code overview
+One Python process on Cloud Run: access check, ADK API, plugin, agent, tool, memory-only storage
+
+<a href="png/app-code-overview.png"><img src="png/app-code-overview.png" width="720" alt="App code overview"></a>
+
+[Open interactive version](https://ovsilya.github.io/website-visitor-lead-check-agent/diagrams/app-code-overview.html)
+
+### Agent internals
+How the app uses ADK: runner, plugin hooks, tool context, artifacts, the rules engine
+
+<a href="png/agent-internals.png"><img src="png/agent-internals.png" width="720" alt="Agent internals"></a>
+
+[Open interactive version](https://ovsilya.github.io/website-visitor-lead-check-agent/diagrams/agent-internals.html)
+
+### Data flow and privacy
+Where personal data goes and where it doesn't
+
+<a href="png/data-flow-and-privacy.png"><img src="png/data-flow-and-privacy.png" width="720" alt="Data flow and privacy"></a>
+
+[Open interactive version](https://ovsilya.github.io/website-visitor-lead-check-agent/diagrams/data-flow-and-privacy.html)
+
+### Target architecture
+Hub-and-spoke target with Gemini Enterprise (A2A), AI gateway and a weekly run
+
+<a href="png/target-architecture.png"><img src="png/target-architecture.png" width="720" alt="Target architecture"></a>
+
+[Open interactive version](https://ovsilya.github.io/website-visitor-lead-check-agent/diagrams/target-architecture.html)
+
+### Terraform cicd deployment
+Terraform and app-release lanes across three environments
+
+<a href="png/terraform-cicd-deployment.png"><img src="png/terraform-cicd-deployment.png" width="720" alt="Terraform cicd deployment"></a>
+
+[Open interactive version](https://ovsilya.github.io/website-visitor-lead-check-agent/diagrams/terraform-cicd-deployment.html)
+
+---
+
+**Anonymized.** People are replaced by roles, the company by "the company", cloud project IDs and repo names by placeholders, and client accounts by fictional names. Some diagrams mention a *legacy weekly report* the agent could run for comparison; that tool is not part of this repository.
