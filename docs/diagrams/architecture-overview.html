@@ -1,0 +1,374 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lead Check: Architecture Overview</title>
+<style>
+  /* Layout: one presentation column, one section per talking point, big type for screen share. Shared KB design (navy / teal / green / amber). */
+  :root{
+    --purple:#1F3A5F; --purple2:#2E5E8C; --purple3:#7FA7CF; --purplebg:#eaf0f8; --purpleln:#c9d8ea;
+    --green:#5FB709; --greenbg:#eaf6d8; --greenln:#cfe7a8; --greenink:#3c6b00;
+    --teal:#128a7d; --tealbg:#dbf3ef; --tealln:#bfe6df;
+    --amber:#B06A00; --amberbg:#fbeede; --amberln:#eccfa6;
+    --blue:#1f6fb2; --bluebg:#e4eff9; --blueln:#c4ddf1;
+    --red:#c0392b; --redbg:#fbe6e3;
+    --ink:#2A2432; --muted:#6b6675; --line:#e2ddec; --card:#fff; --bg:#f4f1f8; --soft:#faf9fc;
+    --hero1:#1F3A5F; --hero2:#2E5E8C; --heroink:#fff; --herosub:#d3e2f2;
+    --shadow:rgba(31,58,95,.12);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --purple:#9cc3ec; --purple2:#79a8d8; --purple3:#4f75a3; --purplebg:#16263a; --purpleln:#2f4a6b;
+      --greenbg:#1f2e14; --greenln:#3d5a22; --greenink:#a6dc6a;
+      --teal:#5fd0c2; --tealbg:#12302c; --tealln:#245650;
+      --amber:#f0b45a; --amberbg:#33260f; --amberln:#5d4520;
+      --blue:#7fb8ea; --bluebg:#142638; --blueln:#2a4a68;
+      --red:#f08a7e; --redbg:#3a1c18;
+      --ink:#ece8f2; --muted:#a9a2b6; --line:#3a3348; --card:#1e1a26; --bg:#141119; --soft:#252030;
+      --hero1:#1c3350; --hero2:#2a4e78; --heroink:#fff; --herosub:#c6d8ee;
+      --shadow:rgba(0,0,0,.4); color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+      --purple:#9cc3ec; --purple2:#79a8d8; --purple3:#4f75a3; --purplebg:#16263a; --purpleln:#2f4a6b;
+      --greenbg:#1f2e14; --greenln:#3d5a22; --greenink:#a6dc6a;
+      --teal:#5fd0c2; --tealbg:#12302c; --tealln:#245650;
+      --amber:#f0b45a; --amberbg:#33260f; --amberln:#5d4520;
+      --blue:#7fb8ea; --bluebg:#142638; --blueln:#2a4a68;
+      --red:#f08a7e; --redbg:#3a1c18;
+      --ink:#ece8f2; --muted:#a9a2b6; --line:#3a3348; --card:#1e1a26; --bg:#141119; --soft:#252030;
+      --hero1:#1c3350; --hero2:#2a4e78; --heroink:#fff; --herosub:#c6d8ee;
+      --shadow:rgba(0,0,0,.4); color-scheme:dark;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);
+       padding-block:24px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));
+       font-size:20px;line-height:1.45;-webkit-font-smoothing:antialiased;}
+  .page{max-width:1240px;margin:0 auto;background:var(--card);border-radius:16px;box-shadow:0 8px 30px var(--shadow);padding:34px 40px 28px;}
+  .brand{font-size:14px;letter-spacing:.14em;text-transform:uppercase;color:var(--purple2);font-weight:700;}
+  h1{font-size:50px;line-height:1.08;margin:8px 0 10px;color:var(--purple);text-wrap:balance;letter-spacing:-.01em;}
+  .cap{font-size:23px;color:var(--muted);margin:0 0 26px;max-width:62ch;}
+  section{margin-top:50px;}
+  .eyebrow{font-size:15px;text-transform:uppercase;letter-spacing:.11em;color:var(--purple2);font-weight:800;}
+  h2{font-size:34px;line-height:1.15;margin:4px 0 18px;color:var(--ink);text-wrap:balance;}
+  h3{margin:0;}
+  b.p{color:var(--purple);}
+  .num{font-variant-numeric:tabular-nums;}
+
+  /* hero stats */
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;}
+  .st{border-radius:14px;padding:18px 20px;border:1px solid var(--line);background:var(--soft);min-width:0;}
+  .st .n{font-size:44px;font-weight:850;line-height:1;color:var(--purple);font-variant-numeric:tabular-nums;}
+  .st .l{font-size:18px;margin-top:8px;line-height:1.35;}
+  .st.r{background:var(--redbg);border-color:var(--line);} .st.r .n{color:var(--red);}
+  .st.g{background:var(--greenbg);border-color:var(--greenln);} .st.g .n{color:var(--greenink);}
+  .st.b{background:var(--bluebg);border-color:var(--blueln);} .st.b .n{color:var(--blue);}
+
+  /* engagement */
+  .bus{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  .bu{border:1px solid var(--line);border-radius:12px;padding:14px 16px;font-size:20px;font-weight:750;color:var(--muted);background:var(--soft);}
+  .bu small{display:block;font-size:16px;font-weight:500;margin-top:4px;}
+  .bu.me{border:2px solid var(--purple2);color:var(--purple);background:var(--purplebg);}
+  .note{font-size:18px;color:var(--muted);margin-top:14px;}
+  .timeline{display:grid;grid-template-columns:repeat(5,1fr);gap:0;margin-top:22px;position:relative;}
+  .ms{position:relative;padding:34px 10px 0 0;}
+  .ms::before{content:"";position:absolute;top:10px;left:0;right:0;height:4px;background:var(--purpleln);}
+  .ms::after{content:"";position:absolute;top:2px;left:0;width:20px;height:20px;border-radius:50%;background:var(--card);border:4px solid var(--purple3);}
+  .ms.done::after{background:var(--purple2);border-color:var(--purple2);}
+  .ms.now::after{background:var(--green);border-color:var(--green);box-shadow:0 0 0 6px var(--greenbg);}
+  .ms .d{font-size:16px;font-weight:800;color:var(--purple2);text-transform:uppercase;letter-spacing:.06em;}
+  .ms .t{font-size:19px;line-height:1.3;margin-top:3px;}
+  .ms.now .d{color:var(--greenink);}
+
+  /* problem */
+  .prob{display:grid;grid-template-columns:1.35fr 1fr;gap:22px;align-items:start;}
+  .funnel{display:flex;flex-direction:column;gap:10px;}
+  .fs{display:flex;align-items:center;gap:16px;border-radius:12px;padding:12px 18px;background:var(--purplebg);border:1px solid var(--purpleln);}
+  .fs .n{font-size:36px;font-weight:850;color:var(--purple);width:5.6ch;flex:none;text-align:right;font-variant-numeric:tabular-nums;}
+  .fs .l{min-width:0;}
+  .fs .l{font-size:19px;line-height:1.3;}
+  .fs:nth-child(2){margin-left:6%;} .fs:nth-child(3){margin-left:12%;}
+  .fs.zero{margin-left:18%;background:var(--redbg);border-color:var(--line);} .fs.zero .n{color:var(--red);}
+  .quote{border-left:6px solid var(--purple3);padding:6px 0 6px 20px;font-size:28px;line-height:1.3;color:var(--purple);font-weight:650;}
+  .quote small{display:block;font-size:16px;color:var(--muted);font-weight:500;margin-top:8px;}
+  .pains{display:flex;flex-direction:column;gap:10px;margin-top:22px;}
+  .pain{font-size:19px;line-height:1.35;padding-left:30px;position:relative;}
+  .pain::before{content:"\d7 ";position:absolute;left:0;top:-3px;font-size:26px;font-weight:800;color:var(--red);}
+
+  /* before / after */
+  .ba{display:grid;grid-template-columns:1fr auto 1fr;gap:16px;align-items:stretch;}
+  .side{border-radius:14px;padding:20px 22px;min-width:0;}
+  .side h3{font-size:24px;margin-bottom:4px;}
+  .side .sub{font-size:16px;color:var(--muted);margin-bottom:12px;}
+  .side ul{margin:0;padding-left:22px;font-size:19px;line-height:1.5;}
+  .side li{margin-bottom:6px;}
+  .before{background:var(--soft);border:1px solid var(--line);} .before h3{color:var(--muted);}
+  .after{background:var(--greenbg);border:1px solid var(--greenln);} .after h3{color:var(--greenink);}
+  .bigarrow{display:flex;align-items:center;font-size:28px;color:var(--purple3);font-weight:800;}
+
+  /* checks */
+  .flow{display:grid;grid-template-columns:1fr auto 2.1fr auto 1.5fr;gap:12px;align-items:stretch;}
+  .box{border-radius:14px;padding:16px 18px;min-width:0;}
+  .box .t{font-size:15px;text-transform:uppercase;letter-spacing:.07em;font-weight:850;margin-bottom:8px;}
+  .box .d{font-size:18px;line-height:1.4;}
+  .in{background:var(--amberbg);border:1px solid var(--amberln);} .in .t{color:var(--amber);}
+  .chk{background:linear-gradient(135deg,var(--hero1),var(--hero2));color:var(--heroink);box-shadow:0 4px 14px var(--shadow);}
+  .chk .t{color:var(--herosub);}
+  .four{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+  .c4{background:rgba(255,255,255,.13);border-radius:10px;padding:10px 12px;font-size:17px;line-height:1.35;}
+  .c4 b{display:block;font-size:21px;color:var(--heroink);}
+  .out{background:var(--card);border:2px solid var(--greenln);}
+  .out .t{color:var(--greenink);}
+  .arrow{display:flex;align-items:center;justify-content:center;font-size:24px;color:var(--purple3);font-weight:800;}
+  .lc{font-size:17px;line-height:1.4;}
+  .lc .who{font-size:20px;font-weight:800;color:var(--ink);}
+  .tags{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0;}
+  .tag{font-size:14px;font-weight:750;border-radius:20px;padding:3px 10px;background:var(--purplebg);color:var(--purple);border:1px solid var(--purpleln);}
+  .tag.g{background:var(--greenbg);color:var(--greenink);border-color:var(--greenln);}
+  .tag.t{background:var(--tealbg);color:var(--teal);border-color:var(--tealln);}
+  .lc .k{font-weight:800;color:var(--purple2);}
+  .ex{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;font-weight:700;margin-top:10px;}
+  .lists{margin-top:14px;display:flex;gap:16px;align-items:center;background:var(--tealbg);border:1px solid var(--tealln);border-radius:14px;padding:14px 20px;}
+  .lists .n{font-size:40px;font-weight:850;color:var(--teal);font-variant-numeric:tabular-nums;}
+  .lists .l{font-size:19px;line-height:1.35;}
+
+  /* data */
+  .data{display:grid;grid-template-columns:1.2fr 1fr;gap:22px;align-items:start;}
+  .split{display:flex;height:64px;border-radius:12px;overflow:hidden;gap:3px;background:var(--card);}
+  .split .p{flex:10;background:var(--purple2);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;}
+  .split .c{flex:90;background:var(--purpleln);color:var(--purple);display:flex;align-items:center;padding-left:18px;font-weight:800;font-size:18px;}
+  .legend{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px;}
+  .lg{font-size:18px;line-height:1.4;}
+  .lg b{display:block;font-size:20px;}
+  .lg.pp b{color:var(--purple2);} .lg.cc b{color:var(--purple);}
+  .priv{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+  .pv{border:1px solid var(--amberln);background:var(--amberbg);border-radius:12px;padding:12px 14px;font-size:18px;line-height:1.35;}
+  .pv b{display:block;color:var(--amber);font-size:19px;}
+
+  /* google */
+  .rule{display:flex;gap:18px;align-items:center;justify-content:center;flex-wrap:wrap;background:var(--purplebg);border:1px solid var(--purpleln);border-radius:14px;padding:16px 20px;margin-bottom:18px;font-size:22px;}
+  .rule .pill{font-weight:850;font-size:24px;color:var(--purple);}
+  .rule .sep{color:var(--purple3);font-weight:800;}
+  .rule small{flex-basis:100%;text-align:center;font-size:17px;color:var(--muted);}
+  .arch{display:grid;grid-template-columns:0.8fr auto 1.1fr auto 1.25fr auto 1.15fr;gap:10px;align-items:stretch;}
+  .node{border-radius:14px;padding:14px 16px;border:1px solid var(--line);background:var(--soft);min-width:0;}
+  .node .t{font-size:14px;text-transform:uppercase;letter-spacing:.07em;font-weight:850;color:var(--muted);margin-bottom:8px;}
+  .svc{border-radius:10px;padding:9px 11px;margin-top:8px;font-size:17px;line-height:1.3;background:var(--card);border:1px solid var(--line);}
+  .svc b{display:block;font-size:19px;}
+  .svc .st2{display:inline-block;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.06em;border-radius:20px;padding:2px 8px;margin-top:6px;}
+  .svc.now{border-color:var(--greenln);} .svc.now .st2{background:var(--greenbg);color:var(--greenink);}
+  .svc.next{border-style:dashed;border-color:var(--blueln);} .svc.next .st2{background:var(--bluebg);color:var(--blue);}
+  .svc.eval{border-style:dashed;border-color:var(--amberln);} .svc.eval .st2{background:var(--amberbg);color:var(--amber);}
+  .node.ai{background:var(--purplebg);border-color:var(--purpleln);} .node.ai .t{color:var(--purple2);}
+  .gkey{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;font-size:16px;color:var(--muted);}
+  .gkey span::before{content:"";display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:7px;vertical-align:-1px;}
+  .gkey .k1::before{background:var(--green);} .gkey .k2::before{background:none;border:2px dashed var(--purple3);width:9px;height:9px;} .gkey .k3::before{background:var(--amber);}
+  .also{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:16px;}
+  .al{border:1px dashed var(--blueln);border-radius:12px;padding:12px 14px;font-size:17px;line-height:1.35;}
+  .al b{display:block;color:var(--blue);font-size:19px;}
+
+
+  /* high-level architecture svg */
+  .archwrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:var(--card);padding:10px;}
+  .ad{display:block;width:100%;min-width:900px;height:auto;}
+  .ad text{font-family:inherit;}
+  .ad .t{font-size:18px;font-weight:800;fill:var(--ink);}
+  .ad .s{font-size:14.5px;fill:var(--muted);}
+  .ad .tw{fill:var(--heroink);} .ad .sw{fill:var(--herosub);}
+  .ad .tm{fill:var(--muted);}
+  .ad .sb{font-weight:800;fill:var(--purple);}
+  .ad .h{font-size:13px;font-weight:850;letter-spacing:.09em;fill:var(--purple2);}
+  .ad .hr{fill:var(--red);}
+  .ad .fr{font-size:16px;font-weight:850;fill:var(--blue);}
+  .ad .lb{font-size:13px;fill:var(--muted);font-weight:700;}
+  .ad .lg2{fill:var(--greenink);}
+  .b-card{fill:var(--card);stroke:var(--line);stroke-width:1.5;}
+  .b-amber{fill:var(--amberbg);stroke:var(--amberln);stroke-width:1.5;}
+  .b-later{fill:var(--soft);stroke:var(--purpleln);stroke-width:1.5;stroke-dasharray:6 4;}
+  .b-bound{fill:none;stroke:var(--red);stroke-width:1.5;stroke-dasharray:7 5;}
+  .b-run{fill:var(--bluebg);stroke:var(--blue);stroke-width:1.5;}
+  .b-agent{fill:var(--purplebg);stroke:var(--purpleln);stroke-width:1.5;}
+  .b-tool{fill:var(--hero1);stroke:none;}
+  .b-lists{fill:var(--card);stroke:var(--line);stroke-width:1.5;}
+  .b-mem{fill:var(--redbg);stroke:var(--red);stroke-width:1;stroke-opacity:.45;}
+  .b-gem{fill:var(--purplebg);stroke:var(--purple2);stroke-width:2;}
+  .l-p{stroke:var(--purple2);stroke-width:1.6;fill:none;}
+  .l-g{stroke:var(--green);stroke-width:1.6;fill:none;}
+  .l-amber{stroke:var(--amber);stroke-width:1.6;fill:none;}
+  .l-dash{stroke:var(--muted);stroke-width:1.4;fill:none;stroke-dasharray:6 5;}
+  .gkey .k4::before{background:var(--red);}
+
+  /* value */
+  .vals{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+  .vl{border-radius:14px;padding:18px 20px;background:var(--soft);border:1px solid var(--line);}
+  .vl .n{font-size:42px;font-weight:850;color:var(--purple);line-height:1;font-variant-numeric:tabular-nums;}
+  .vl .l{font-size:18px;margin-top:8px;line-height:1.35;}
+  .vl.g{background:var(--greenbg);border-color:var(--greenln);} .vl.g .n{color:var(--greenink);}
+  .measure{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px;}
+  .ms2{border-left:6px solid var(--teal);background:var(--tealbg);border-radius:0 12px 12px 0;padding:12px 16px;font-size:18px;line-height:1.35;}
+  .ms2 b{display:block;color:var(--teal);font-size:15px;text-transform:uppercase;letter-spacing:.07em;}
+
+  /* next */
+  .road{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+  .rd{border:1px solid var(--line);border-radius:14px;padding:16px 18px;font-size:18px;line-height:1.4;}
+  .rd .w{font-size:15px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+  .rd .k{font-size:23px;font-weight:850;color:var(--purple);margin:2px 0 6px;}
+  .rd.now{background:var(--greenbg);border-color:var(--greenln);} .rd.now .w,.rd.now .k{color:var(--greenink);}
+  .src{margin-top:34px;font-size:14px;color:var(--muted);text-align:right;}
+
+  @media (max-width:1000px){
+    .page{padding:22px 20px;}
+    h1{font-size:38px;} h2{font-size:28px;}
+    .stats,.bus,.road{grid-template-columns:1fr 1fr;}
+    .prob,.data{grid-template-columns:1fr;}
+    .ba{grid-template-columns:1fr;} .bigarrow{justify-content:center;transform:rotate(90deg);}
+    .flow,.arch{grid-template-columns:1fr;} .arrow{transform:rotate(90deg);}
+    .vals,.also{grid-template-columns:1fr 1fr;}
+    .timeline{grid-template-columns:1fr;gap:10px;}
+    .ms{padding:0 0 0 36px;} .ms::before{top:0;bottom:-10px;left:8px;right:auto;width:4px;height:auto;} .ms::after{top:2px;}
+  }
+  @media (max-width:600px){
+    body{font-size:18px;}
+    h1{font-size:31px;} .cap{font-size:19px;} h2{font-size:24px;}
+    .stats,.bus,.road,.vals,.also,.four,.priv,.legend,.measure{grid-template-columns:1fr;}
+    .st .n,.vl .n{font-size:36px;}
+    .fs:nth-child(n){margin-left:0;flex-direction:column;align-items:flex-start;gap:4px;}
+    .fs .n{font-size:30px;width:auto;text-align:left;}
+    .page{padding:18px 14px;}
+    .lists{flex-direction:column;align-items:flex-start;}
+    .quote{font-size:22px;}
+  }
+  @media (prefers-reduced-motion:no-preference){ .ms.now::after{animation:pulse 2.4s ease-in-out infinite;} @keyframes pulse{50%{box-shadow:0 0 0 11px var(--greenbg);}} }
+</style>
+</head><body>
+<div class="page">
+  <section style="margin-top:0">
+    <div class="eyebrow">Built on Google</div>
+    <h2>How it fits together on Google Cloud</h2>
+    <div class="archwrap">
+    <svg class="ad" viewBox="0 0 1200 600" role="img" aria-label="High-level architecture: a Marketing user signs in with Google and talks to the agent on Cloud Run; the agent runs the rules tool on the RB2B file and asks Gemini on Vertex AI to explain the result">
+      <defs>
+        <marker id="aP" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0,1L10,5L0,9z" style="fill:var(--purple2)"/></marker>
+        <marker id="aG" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0,1L10,5L0,9z" style="fill:var(--green)"/></marker>
+        <marker id="aM" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0,1L10,5L0,9z" style="fill:var(--muted)"/></marker>
+        <marker id="aA" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" orient="auto-start-reverse"><path d="M0,1L10,5L0,9z" style="fill:var(--amber)"/></marker>
+      </defs>
+
+      <!-- column labels -->
+      <text x="10" y="40" class="h">WHO USES IT</text>
+      <text x="960" y="40" class="h">GOOGLE AI AND SERVICES</text>
+
+      <!-- people and data on the left -->
+      <rect x="10" y="54" width="190" height="92" rx="10" class="b-card"/>
+      <text x="24" y="82" class="t">Marketing user</text>
+      <text x="24" y="104" class="s">chats in the browser</text>
+      <text x="24" y="124" class="s">about 10 people</text>
+
+      <rect x="10" y="200" width="190" height="92" rx="10" class="b-amber"/>
+      <text x="24" y="228" class="t">RB2B weekly file</text>
+      <text x="24" y="250" class="s">website visitors (CSV)</text>
+      <text x="24" y="270" class="s">uploaded in the chat</text>
+      <line x1="105" y1="200" x2="105" y2="150" class="l-amber" marker-end="url(#aA)"/>
+
+      <rect x="10" y="340" width="190" height="92" rx="10" class="b-later"/>
+      <text x="24" y="368" class="t tm">Gemini Enterprise</text>
+      <text x="24" y="390" class="s">the company AI app</text>
+      <text x="24" y="410" class="s">later: the front door</text>
+
+      <rect x="10" y="470" width="190" height="92" rx="10" class="b-later"/>
+      <text x="24" y="498" class="t tm">Cloud Scheduler</text>
+      <text x="24" y="520" class="s">later: weekly run,</text>
+      <text x="24" y="540" class="s">leads emailed out</text>
+
+      <!-- sign-in gate -->
+      <rect x="236" y="54" width="160" height="92" rx="10" class="b-amber"/>
+      <text x="250" y="82" class="t">Google sign-in</text>
+      <text x="250" y="104" class="s">IAP: named company</text>
+      <text x="250" y="124" class="s">users only</text>
+
+      <!-- project boundary -->
+      <rect x="420" y="16" width="506" height="572" rx="16" class="b-bound"/>
+      <text x="436" y="40" class="h hr">MARKETING'S GOOGLE CLOUD PROJECT &#183; PRIVATE</text>
+
+      <!-- Cloud Run -->
+      <rect x="440" y="54" width="466" height="516" rx="14" class="b-run"/>
+      <text x="458" y="82" class="fr">Cloud Run &#183; one container</text>
+
+      <rect x="458" y="98" width="430" height="104" rx="10" class="b-agent"/>
+      <text x="476" y="128" class="t">The agent &#183; built with Google ADK</text>
+      <text x="476" y="152" class="s">understands the request, picks the tool,</text>
+      <text x="476" y="174" class="s">asks Gemini to write a short answer</text>
+
+      <rect x="458" y="230" width="430" height="116" rx="10" class="b-tool"/>
+      <text x="476" y="260" class="t tw">The tool &#183; lead check (fixed rules, no AI)</text>
+      <text x="476" y="286" class="s sw">4 checks: Who &#183; Which &#183; What &#183; Rule out</text>
+      <text x="476" y="308" class="s sw">points, top 3 people per account,</text>
+      <text x="476" y="330" class="s sw">account notes, Excel workbook</text>
+      <line x1="673" y1="202" x2="673" y2="228" class="l-p" marker-start="url(#aP)" marker-end="url(#aP)"/>
+
+      <rect x="458" y="374" width="205" height="116" rx="10" class="b-lists"/>
+      <text x="474" y="404" class="t">Editable lists</text>
+      <text x="474" y="428" class="s">13 lists Marketing</text>
+      <text x="474" y="448" class="s">controls: accounts,</text>
+      <text x="474" y="468" class="s">pages, competitors&#8230;</text>
+      <line x1="560" y1="346" x2="560" y2="372" class="l-p" marker-start="url(#aP)"/>
+
+      <rect x="683" y="374" width="205" height="116" rx="10" class="b-mem"/>
+      <text x="699" y="404" class="t">Memory only</text>
+      <text x="699" y="428" class="s">the file and workbook,</text>
+      <text x="699" y="448" class="s">cleared after 30 idle</text>
+      <text x="699" y="468" class="s">minutes; never saved</text>
+      <line x1="786" y1="346" x2="786" y2="372" class="l-p" marker-start="url(#aP)" marker-end="url(#aP)"/>
+
+      <text x="458" y="524" class="s">Own service account: it may only call Gemini and write logs.</text>
+      <text x="458" y="548" class="s">Built and changed only through reviewed code (Terraform).</text>
+
+      <!-- user to agent, and the answer back -->
+      <line x1="200" y1="88" x2="234" y2="88" class="l-p" marker-end="url(#aP)"/>
+      <line x1="396" y1="88" x2="456" y2="88" class="l-p" marker-end="url(#aP)"/>
+      <line x1="456" y1="128" x2="398" y2="128" class="l-g" marker-end="url(#aG)"/>
+      <line x1="234" y1="128" x2="202" y2="128" class="l-g" marker-end="url(#aG)"/>
+      <text x="300" y="172" class="lb lg2">answer + workbook</text>
+
+      <!-- later entry points -->
+      <line x1="200" y1="386" x2="438" y2="386" class="l-dash" marker-end="url(#aM)"/>
+      <text x="214" y="376" class="lb">A2A</text>
+      <line x1="200" y1="516" x2="438" y2="516" class="l-dash" marker-end="url(#aM)"/>
+
+      <!-- Google AI on the right -->
+      <rect x="960" y="54" width="230" height="130" rx="10" class="b-gem"/>
+      <text x="976" y="84" class="t">Gemini on Vertex AI</text>
+      <text x="976" y="108" class="s">writes the summary and</text>
+      <text x="976" y="128" class="s">answers follow-ups</text>
+      <text x="976" y="160" class="s sb">gets counts and titles only</text>
+      <line x1="888" y1="130" x2="958" y2="130" class="l-p" marker-start="url(#aP)" marker-end="url(#aP)"/>
+
+      <rect x="960" y="210" width="230" height="92" rx="10" class="b-later"/>
+      <text x="976" y="238" class="t tm">Central AI gateway</text>
+      <text x="976" y="260" class="s">next: picks the best</text>
+      <text x="976" y="280" class="s">Gemini model per call</text>
+
+      <rect x="960" y="328" width="230" height="92" rx="10" class="b-lists"/>
+      <text x="976" y="356" class="t">Cloud Logging</text>
+      <text x="976" y="378" class="s">errors and audit only,</text>
+      <text x="976" y="398" class="s">no file content</text>
+      <line x1="906" y1="374" x2="958" y2="374" class="l-dash" marker-end="url(#aM)"/>
+
+      <rect x="960" y="446" width="230" height="124" rx="10" class="b-later"/>
+      <text x="976" y="474" class="t tm">Later data sources</text>
+      <text x="976" y="498" class="s">Salesforce: already a contact?</text>
+      <text x="976" y="520" class="s">Pardot: content-download leads</text>
+      <text x="976" y="542" class="s">BigQuery: lists and results</text>
+      <line x1="958" y1="508" x2="908" y2="508" class="l-dash" marker-end="url(#aM)"/>
+    </svg>
+    </div>
+    <div class="gkey"><span class="k1">Solid: live in the beta</span><span class="k2">Dashed: planned for the full version</span><span class="k4">Personal data stays inside the project, in memory only</span></div>
+    <div class="also">
+      <div class="al"><b>Vertex AI Agent Engine</b>the program's default agent runtime; being compared with Cloud Run before the move to the business unit's projects</div>
+      <div class="al"><b>Cloud Build + Artifact Registry</b>package the code and lists into a container; never any data</div>
+      <div class="al"><b>Terraform on Google Cloud</b>the business unit's projects are built only from reviewed code</div>
+    </div>
+  </section>
+
+</div>
+<script>const t=new URLSearchParams(location.search).get("theme");if(t)document.documentElement.setAttribute("data-theme",t);
+window.onload=()=>document.body.setAttribute("data-h",document.documentElement.scrollHeight)</script>
+</body></html>

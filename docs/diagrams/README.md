@@ -2,6 +2,13 @@
 
 Click a preview for the full-size image. The interactive HTML version opens on GitHub Pages.
 
+### Architecture overview
+How the pieces fit together on Google Cloud: sign-in, the agent and the rules tool on Cloud Run, Gemini, and what comes later
+
+<a href="png/architecture-overview-light.png"><img src="png/architecture-overview-light.png" width="720" alt="Architecture overview"></a>
+
+[Open interactive version](https://ovsilya.github.io/website-visitor-lead-check-agent/diagrams/architecture-overview.html)
+
 ### Lead check rules
 The four checks, points and top N per account, with an example answer
 

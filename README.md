@@ -16,23 +16,7 @@ Built as a **forward-deployed engineering** engagement embedded with an enterpri
 
 ## How it works
 
-```mermaid
-flowchart LR
-    U["Marketing tester<br/>(browser)"] -->|"Google sign-in (IAP)<br/>upload RB2B .csv"| CR
-    subgraph CR["Cloud Run · 1 instance · private project"]
-        direction TB
-        A["AccessMiddleware<br/>user id = verified IAP JWT email<br/>endpoint allow-list · CSP"]
-        P["InMemoryUploadsPlugin<br/>file kept in RAM only<br/>model sees a placeholder<br/>fails closed on non-text parts"]
-        G["ADK Agent<br/>Gemini on Vertex AI<br/>summary + follow-ups"]
-        T["check_leads tool<br/>rules engine"]
-        L[("13 editable<br/>CSV lists")]
-        W["Workbook (.xlsx)<br/>in-memory artifact<br/>download once · 30-min TTL"]
-        A --> P --> G -->|"function call"| T
-        L --> T --> W
-        T -->|"counts, titles, tiers<br/>no names / emails"| G
-    end
-    CR -->|"answer card + workbook"| U
-```
+<a href="https://ovsilya.github.io/website-visitor-lead-check-agent/diagrams/architecture-overview.html"><img alt="Architecture: a Marketing user signs in with Google (IAP) and chats with the ADK agent on Cloud Run; the agent runs the fixed-rules lead-check tool on the RB2B file, with editable lists and memory-only storage, and asks Gemini on Vertex AI for the summary" src="docs/diagrams/png/architecture-overview-light.png#gh-light-mode-only"><img alt="Architecture: a Marketing user signs in with Google (IAP) and chats with the ADK agent on Cloud Run; the agent runs the fixed-rules lead-check tool on the RB2B file, with editable lists and memory-only storage, and asks Gemini on Vertex AI for the summary" src="docs/diagrams/png/architecture-overview-dark.png#gh-dark-mode-only"></a>
 
 ### The four checks (fixed rules, `lead_agent/lead_check/engine.py`)
 
